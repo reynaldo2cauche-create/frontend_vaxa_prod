@@ -70,6 +70,11 @@ export default async function TenantLayout({ children, params }: TenantLayoutPro
     </nav>
   );
 
+  // Para empresa-techpro, no usar el layout general (es independiente)
+  if (tenantId === 'empresa-techpro') {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <LoginWrapper header={header} navigation={navigation}>

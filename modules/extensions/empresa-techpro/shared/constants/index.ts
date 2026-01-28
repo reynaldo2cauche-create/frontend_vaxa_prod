@@ -4,7 +4,9 @@
 export const TENANT_CONFIG = {
   NAME: 'Empresa TechPro',
   ID: 'empresa-techpro',
-  PRIMARY_COLOR: 'purple',
+  PRIMARY_COLOR: '#9333ea', // purple-600
+  SECONDARY_COLOR: '#6366f1', // indigo-600
+  LOGO: '/videologo.png', // Debe empezar con / para Next.js Image, o null para usar el logo por defecto
   REFRESH_INTERVAL: 30000, // 30 segundos
 } as const;
 

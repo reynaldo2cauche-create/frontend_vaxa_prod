@@ -4,9 +4,8 @@
 import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { getTenantConfig } from '@/lib/tenants';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
+import Image from 'next/image';
+import { Lock, Mail, Building2, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { TENANT_CONFIG } from '../../shared/constants';
 
 interface LoginProps {
@@ -19,12 +18,13 @@ export default function TechProLogin({ params }: LoginProps) {
   const { tenant: tenantId } = use(params);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const tenant = getTenantConfig(tenantId);
-  
+
   if (!tenant) {
     return null;
   }
@@ -37,106 +37,228 @@ export default function TechProLogin({ params }: LoginProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email || !password) {
+      setError('Por favor completa todos los campos');
+      return;
+    }
+
     setError('');
     setIsLoading(true);
 
     try {
-      // TODO: Implementar llamada real a la API de autenticación
-      // Por ahora simulamos un login exitoso
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Datos estáticos para autenticación (full frontend)
+      const USUARIOS_ESTATICOS = [
+        {
+          email: 'admin@tecpro.com',
+          password: '123456',
+          nombre: 'Administrador TechPro',
+          role: 'admin'
+        },
+        {
+          email: 'usuario@tecpro.com',
+          password: '123456',
+          nombre: 'Usuario Demo',
+          role: 'user'
+        }
+      ];
 
-      // Guardar sesión (por ahora en localStorage, luego será con cookies/backend)
+      // Simular delay de red
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Validar credenciales
+      const usuario = USUARIOS_ESTATICOS.find(
+        (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+      );
+
+      if (!usuario) {
+        setError('Credenciales incorrectas. Intenta con admin@tecpro.com / 123456');
+        setIsLoading(false);
+        return;
+      }
+
+      // Login exitoso - guardar sesión en localStorage
       localStorage.setItem(`auth_${tenantId}`, 'true');
-      localStorage.setItem(`auth_user_${tenantId}`, email);
+      localStorage.setItem(`auth_user_${tenantId}`, JSON.stringify({
+        email: usuario.email,
+        nombre: usuario.nombre,
+        role: usuario.role
+      }));
 
-      // Redirigir al dashboard o página principal
+      console.log('✅ Login exitoso:', usuario.nombre);
+
+      // Redirigir al dashboard
       router.push(`/${tenantId}`);
       router.refresh();
     } catch (err) {
-      setError('Credenciales incorrectas. Por favor, intente nuevamente.');
-    } finally {
+      console.error('Error en login:', err);
+      setError('Error de conexión. Por favor, intente nuevamente.');
       setIsLoading(false);
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSubmit(e as any);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="mb-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-full mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-          </div>
-          <h2 className="text-4xl font-bold text-gray-900 bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-            {TENANT_CONFIG.NAME}
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">Inicia sesión en tu cuenta</p>
-        </div>
-
-        <Card className="shadow-2xl border-0">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded">
-                <p className="font-medium">{error}</p>
-              </div>
-            )}
-
-            <Input
-              label="Correo electrónico"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="tu@email.com"
-            />
-
-            <Input
-              label="Contraseña"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-            />
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Recordarme
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-purple-600 hover:text-purple-500">
-                  ¿Olvidaste tu contraseña?
-                </a>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              isLoading={isLoading}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-lg shadow-lg transform hover:scale-105 transition-all"
+    <div
+      className="fixed inset-0 flex items-center justify-center lg:p-8"
+      style={{
+        background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}15, ${TENANT_CONFIG.SECONDARY_COLOR}15)`
+      }}
+    >
+      <div className="w-full h-full lg:h-auto lg:max-w-4xl">
+        <div className="bg-white lg:rounded-2xl shadow-2xl overflow-hidden h-full lg:h-auto">
+          <div className="grid lg:grid-cols-2 gap-0 h-full lg:h-auto">
+            {/* Panel izquierdo - Logo y marca */}
+            <div
+              className="hidden lg:flex flex-col items-center justify-center p-8"
+              style={{
+                background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
+              }}
             >
-              Iniciar sesión
-            </Button>
-          </form>
+              <div className="text-center">
+                {TENANT_CONFIG.LOGO ? (
+                  <Image
+                    src={TENANT_CONFIG.LOGO}
+                    alt={TENANT_CONFIG.NAME}
+                    width={140}
+                    height={140}
+                    className="mx-auto rounded-xl object-cover shadow-xl mb-6 border-4 border-white"
+                  />
+                ) : (
+                  <div className="w-32 h-32 mx-auto rounded-xl flex items-center justify-center shadow-xl mb-6 border-4 border-white bg-white/10 backdrop-blur-sm">
+                    <Building2 className="w-16 h-16 text-white" />
+                  </div>
+                )}
+                <h1 className="text-3xl font-bold text-white mb-3">
+                  {TENANT_CONFIG.NAME}
+                </h1>
+                <p className="text-white/90 text-base">
+                  Sistema de Gestión de Certificados
+                </p>
+              </div>
+            </div>
 
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-center text-xs text-gray-500">
-              Login personalizado de <strong>{TENANT_CONFIG.NAME}</strong>
-            </p>
+            {/* Panel derecho - Formulario */}
+            <div className="p-6 lg:p-8 flex flex-col justify-center overflow-y-auto">
+              {/* Logo móvil */}
+              <div className="lg:hidden text-center mb-6">
+                {TENANT_CONFIG.LOGO ? (
+                  <Image
+                    src={TENANT_CONFIG.LOGO}
+                    alt={TENANT_CONFIG.NAME}
+                    width={80}
+                    height={80}
+                    className="mx-auto rounded-xl object-cover shadow-lg mb-4 border-3 border-white"
+                  />
+                ) : (
+                  <div
+                    className="w-20 h-20 mx-auto rounded-xl flex items-center justify-center shadow-lg mb-4 border-3 border-white"
+                    style={{
+                      background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
+                    }}
+                  >
+                    <Building2 className="w-10 h-10 text-white" />
+                  </div>
+                )}
+                <h1 className="text-2xl font-bold text-gray-800 mb-1">
+                  {TENANT_CONFIG.NAME}
+                </h1>
+              </div>
+
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">
+                  Bienvenido
+                </h2>
+                <p className="text-gray-600 text-sm">Inicia sesión para continuar</p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Correo Electrónico
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-sm"
+                      placeholder="tu@email.com"
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Contraseña
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      className="w-full pl-10 pr-11 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-sm"
+                      placeholder="••••••••"
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      disabled={isLoading}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Error */}
+                {error && (
+                  <div className="flex items-center gap-2 text-red-600 bg-red-50 p-2.5 rounded-lg">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-xs">{error}</span>
+                  </div>
+                )}
+
+                {/* Botón */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full text-white py-2.5 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
+                  style={{
+                    background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
+                  }}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Ingresando...
+                    </>
+                  ) : (
+                    'Iniciar Sesión'
+                  )}
+                </button>
+              </form>
+
+              {/* Footer */}
+              <div className="text-center mt-6 text-xs text-gray-500">
+                <p>Powered by <strong>VAXA</strong></p>
+              </div>
+            </div>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );

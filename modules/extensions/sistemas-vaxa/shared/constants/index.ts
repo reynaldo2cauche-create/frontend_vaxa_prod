@@ -2,11 +2,11 @@
 // Estas constantes pueden ser usadas por todos los módulos del tenant
 
 export const TENANT_CONFIG = {
-  NAME: 'Empresa TechPro',
-  ID: 'empresa-techpro',
-  PRIMARY_COLOR: '#ea6733', // purple-600
+  NAME: 'Vaxa Systems',
+  ID: 'vaxa-systems',
+  PRIMARY_COLOR: '#947062', // purple-600
   SECONDARY_COLOR: '#b63b19', // indigo-600
-  LOGO: '/videologo.png', // Debe empezar con / para Next.js Image, o null para usar el logo por defecto
+  LOGO: '/vaxa.png', // Debe empezar con / para Next.js Image, o null para usar el logo por defecto
   REFRESH_INTERVAL: 30000, // 30 segundos
 } as const;
 

@@ -87,7 +87,7 @@ export default function TechProDashboard({
       {/* CONTENIDO PRINCIPAL */}
       <main className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
         {/* Header con bienvenida */}
-        <div className="mb-10">
+        <div className="mb-10 animate-[fadeIn_0.6s_ease-out]">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             Hola, {usuario.nombre.split(' ')[0]} 👋
           </h2>
@@ -99,7 +99,7 @@ export default function TechProDashboard({
         {/* ESTADÍSTICAS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           {/* Card 1 - Total Certificados */}
-          <div className="bg-white rounded-3xl p-7 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 group hover:-translate-y-2">
+          <div className="bg-white rounded-3xl p-7 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 group hover:-translate-y-2 animate-[slideUp_0.6s_ease-out_0.1s_both]">
             <div className="flex items-center justify-between mb-5">
               <div
                 className="relative w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg"
@@ -125,7 +125,7 @@ export default function TechProDashboard({
           </div>
 
           {/* Card 2 - Este Mes */}
-          <div className="bg-white rounded-3xl p-7 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 group hover:-translate-y-2">
+          <div className="bg-white rounded-3xl p-7 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 group hover:-translate-y-2 animate-[slideUp_0.6s_ease-out_0.2s_both]">
             <div className="flex items-center justify-between mb-5">
               <div
                 className="relative w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg"
@@ -151,7 +151,7 @@ export default function TechProDashboard({
           </div>
 
           {/* Card 3 - Actividad */}
-          <div className="bg-white rounded-3xl p-7 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 group hover:-translate-y-2">
+          <div className="bg-white rounded-3xl p-7 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 group hover:-translate-y-2 animate-[slideUp_0.6s_ease-out_0.3s_both]">
             <div className="flex items-center justify-between mb-5">
               <div
                 className="relative w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg"
@@ -179,7 +179,7 @@ export default function TechProDashboard({
 
         {/* Sección de actividad reciente */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-          <div className="bg-white rounded-3xl p-7 border border-gray-100 shadow-lg hover:shadow-xl transition-all">
+          <div className="bg-white rounded-3xl p-7 border border-gray-100 shadow-lg hover:shadow-xl transition-all animate-[slideUp_0.6s_ease-out_0.4s_both]">
             <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
               <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -204,7 +204,7 @@ export default function TechProDashboard({
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-7 border border-gray-100 shadow-lg hover:shadow-xl transition-all">
+          <div className="bg-white rounded-3xl p-7 border border-gray-100 shadow-lg hover:shadow-xl transition-all animate-[slideUp_0.6s_ease-out_0.5s_both]">
             <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
               <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -229,10 +229,12 @@ export default function TechProDashboard({
         </div>
 
         {/* Generador de Certificados */}
-        <GeneradorCertificados />
+        <div className="animate-[slideUp_0.6s_ease-out_0.6s_both]">
+          <GeneradorCertificados />
+        </div>
 
         {/* Información del tenant */}
-        <div className="bg-white rounded-3xl p-8 border border-gray-100 mt-10 shadow-lg">
+        <div className="bg-white rounded-3xl p-8 border border-gray-100 mt-10 shadow-lg animate-[slideUp_0.6s_ease-out_0.7s_both]">
           <h3 className="text-xl font-bold text-gray-900 mb-7">Información del Sistema</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="p-5 bg-gray-50 rounded-2xl shadow-sm hover:shadow-md transition-shadow">

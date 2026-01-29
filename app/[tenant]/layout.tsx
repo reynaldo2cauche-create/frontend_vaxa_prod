@@ -71,7 +71,7 @@ export default async function TenantLayout({ children, params }: TenantLayoutPro
   );
 
   // Para empresa-techpro, no usar el layout general (es independiente)
-  if (tenantId === 'empresa-techpro') {
+  if (tenantId === 'certificaciones') {
     return <>{children}</>;
   }
 

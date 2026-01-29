@@ -25,9 +25,9 @@ export interface TenantConfig {
 
 // Base de datos simulada de tenants (luego vendrá del backend)
 const tenants: Record<string, TenantConfig> = {
-   'empresa-techpro': {
-    id: 'empresa-techpro',
-    name: 'Empresa TechPro',
+   'certificaciones': {
+    id: 'certificaciones',
+    name: 'Certificaciones',
     primaryColor: 'purple',
     hasLogin: true,
     modules: {
@@ -38,7 +38,7 @@ const tenants: Record<string, TenantConfig> = {
       facturacion: false,
       participantes: true, // Habilitar participantes
     },
-    customModules: ['Dashboard', 'Login', 'Participantes', 'HistorialLotes', 'Certificados'],
+    customModules: ['Dashboard', 'Login', 'Participantes', 'HistorialLotes', 'Certificados', 'Validacion'],
   },
   'sistemas-vaxa':{
     id: 'sistemas-vaxa',
@@ -47,12 +47,12 @@ const tenants: Record<string, TenantConfig> = {
     hasLogin: true,
     modules: {
       dashboard: true,
-      pacientes: true,
-      citas: true,
-      terapeutas: true,
-      facturacion: true,
+      pacientes: false,
+      citas: false,
+      terapeutas: false,
+      facturacion: false,
     },
-    customModules: ['Dashboard', 'Login'], // Usa módulos core
+    customModules: ['Dashboard', 'Login', 'Sistemas', 'Usuarios', 'Configuracion', 'Planes'],
   }
 };
 

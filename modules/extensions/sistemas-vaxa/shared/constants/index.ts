@@ -1,36 +1,58 @@
-// Constantes compartidas para el tenant empresa-techpro
-// Estas constantes pueden ser usadas por todos los módulos del tenant
+// Constantes para sistemas-vaxa (panel de administración)
 
-export const TENANT_CONFIG = {
-  NAME: 'Vaxa Systems',
-  ID: 'vaxa-systems',
-  PRIMARY_COLOR: '#947062', // purple-600
-  SECONDARY_COLOR: '#b63b19', // indigo-600
-  LOGO: '/vaxa.png', // Debe empezar con / para Next.js Image, o null para usar el logo por defecto
-  REFRESH_INTERVAL: 30000, // 30 segundos
+export const VAXA_CONFIG = {
+  NAME: 'Sistemas Vaxa',
+  PRIMARY_COLOR: '#6366f1', // Indigo
+  SECONDARY_COLOR: '#4f46e5',
+  LOGO: '/vaxa-logo.png', // Logo del panel admin
+};
+
+// Tipos de sistemas que se pueden gestionar
+export const TIPOS_SISTEMAS = {
+  CERTIFICADOS: 'certificados',
+  MEDICO: 'medico',
+  INVENTARIO: 'inventario',
+  // Agregar más tipos según se vayan creando
 } as const;
 
-export const API_ENDPOINTS = {
-  DASHBOARD: {
-    METRICS: '/api/dashboard/metrics',
-    ACTIVITY: '/api/dashboard/activity',
-    STATS: '/api/dashboard/stats',
+// Estados de sistemas
+export const ESTADOS_SISTEMA = {
+  ACTIVO: 'activo',
+  INACTIVO: 'inactivo',
+  SUSPENDIDO: 'suspendido',
+} as const;
+
+// Roles de usuarios en sistemas
+export const ROLES_USUARIO = {
+  ADMIN: 'admin',
+  OPERADOR: 'operador',
+  USUARIO: 'usuario',
+} as const;
+
+// Planes disponibles
+export const PLANES = {
+  BASICO: {
+    id: 'basico',
+    nombre: 'Básico',
+    precio: 29.99,
+    usuarios: 5,
+    certificados: 100, // por mes
+    features: ['5 usuarios', '100 certificados/mes', 'Soporte email'],
   },
-  // Aquí puedes agregar más endpoints específicos del tenant
-} as const;
-
-export const CHART_COLORS = {
-  primary: '#9333ea', // purple-600
-  secondary: '#6366f1', // indigo-600
-  success: '#10b981', // green-500
-  warning: '#f59e0b', // amber-500
-  danger: '#ef4444', // red-500
-  info: '#3b82f6', // blue-500
-} as const;
-
-export const METRIC_TYPES = {
-  USERS: 'users',
-  SESSIONS: 'sessions',
-  REVENUE: 'revenue',
-  EFFICIENCY: 'efficiency',
+  PROFESIONAL: {
+    id: 'profesional',
+    nombre: 'Profesional',
+    precio: 79.99,
+    usuarios: 20,
+    certificados: 500,
+    features: ['20 usuarios', '500 certificados/mes', 'Soporte prioritario', 'API access'],
+  },
+  EMPRESARIAL: {
+    id: 'empresarial',
+    nombre: 'Empresarial',
+    precio: 199.99,
+    usuarios: -1, // ilimitado
+    certificados: -1, // ilimitado
+    features: ['Usuarios ilimitados', 'Certificados ilimitados', 'Soporte 24/7', 'API ilimitado', 'Personalización avanzada'],
+  },
 } as const;

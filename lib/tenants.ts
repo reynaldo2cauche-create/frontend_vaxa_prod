@@ -13,6 +13,7 @@ export interface TenantConfig {
     citas: boolean;
     terapeutas: boolean;
     facturacion?: boolean;
+    participantes?: boolean;
   };
 
   // Indica si este tenant utiliza inicio de sesión
@@ -24,9 +25,9 @@ export interface TenantConfig {
 
 // Base de datos simulada de tenants (luego vendrá del backend)
 const tenants: Record<string, TenantConfig> = {
-  'empresa-techpro': {
-    id: 'empresa-techpro',
-    name: 'Empresa TechPro',
+   'certificaciones': {
+    id: 'certificaciones',
+    name: 'Certificaciones',
     primaryColor: 'purple',
     hasLogin: true,
     modules: {
@@ -35,9 +36,24 @@ const tenants: Record<string, TenantConfig> = {
       citas: false,
       terapeutas: false,
       facturacion: false,
+      participantes: true, // Habilitar participantes
     },
-    customModules: ['Dashboard', 'Login'], // Dashboard y Login personalizados para esta empresa
+    customModules: ['Dashboard', 'Login', 'Participantes', 'HistorialLotes', 'Certificados', 'Validacion'],
   },
+  'sistemas-vaxa':{
+    id: 'sistemas-vaxa',
+    name: 'Sistemas Vaxa',
+    primaryColor: 'indigo',
+    hasLogin: true,
+    modules: {
+      dashboard: true,
+      pacientes: false,
+      citas: false,
+      terapeutas: false,
+      facturacion: false,
+    },
+    customModules: ['Dashboard', 'Login', 'Sistemas', 'Usuarios', 'Configuracion', 'Planes'],
+  }
 };
 
 /**

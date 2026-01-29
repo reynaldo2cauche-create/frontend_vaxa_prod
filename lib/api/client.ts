@@ -22,9 +22,9 @@ export async function apiClient<T>(
   const url = `${API_URL}${endpoint}`;
 
   // Headers por defecto
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...fetchOptions.headers,
+    ...(fetchOptions.headers as Record<string, string>),
   };
 
   // CRÍTICO: Agregar tenant-id siempre (el backend lo necesita para filtrar datos)

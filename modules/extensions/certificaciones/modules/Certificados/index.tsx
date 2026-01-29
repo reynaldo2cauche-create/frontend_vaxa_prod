@@ -254,18 +254,16 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <Loader2 className="w-8 h-8 animate-spin text-brand" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }} />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
       </div>
     );
   }
 
   if (!usuario) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="text-center">
-          <p className="text-red-600 font-semibold">Error: No se pudo cargar la información</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <p className="text-sm text-red-600">Error: No se pudo cargar la información</p>
       </div>
     );
   }
@@ -280,34 +278,37 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
   const currentParticipantes = filteredParticipantes.slice(startIndex, endIndex);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-white">
+      {/* Subtle background grid */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      </div>
+
       {/* HEADER NAVBAR */}
       <Header tenantId={tenantId} usuario={usuario} />
 
       {/* MAIN CONTENT */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header de página con botón volver */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => router.push(`/${tenantId}/historial`)}
-            className="flex items-center gap-2 text-gray-600 hover:bg-gray-100 mb-6 px-4 py-2 rounded-lg transition-all font-medium hover:text-gray-900 animate-[fadeIn_0.5s_ease-out]"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
             Volver al Historial
           </button>
 
-          <div className="flex items-center gap-4 mb-6 animate-[slideUp_0.6s_ease-out_0.1s_both]">
+          <div className="flex items-center gap-4 mb-6">
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
-              style={{
-                background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
-              }}
+              className="w-12 h-12 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: `${TENANT_CONFIG.PRIMARY_COLOR}15` }}
             >
-              <Users className="w-7 h-7 text-white" />
+              <Users className="w-6 h-6" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">Lote #{loteId}</h1>
-              <p className="text-sm text-gray-600 font-medium">
+              <h1 className="text-2xl font-semibold text-gray-900 mb-1">Lote #{loteId}</h1>
+              <p className="text-sm text-gray-600">
                 {stats.total} certificados - {participantes[0]?.curso || 'Curso'}
               </p>
             </div>
@@ -315,46 +316,39 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
         </div>
 
         {/* FILTROS */}
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 mb-6">
-          <div className="grid grid-cols-1 gap-4">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por nombre, DNI o correo..."
-                className="w-full pl-12 pr-12 py-3.5 border-2 border-gray-200 rounded-2xl focus:outline-none transition-all text-sm shadow-sm"
-                style={{
-                  borderColor: searchTerm ? TENANT_CONFIG.PRIMARY_COLOR : undefined
-                }}
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
-            </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar por nombre, DNI o correo..."
+              className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-200 flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap pt-4 border-t border-gray-200">
             <Filter className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-600 font-semibold">Ordenar:</span>
+            <span className="text-sm text-gray-600 font-medium">Ordenar:</span>
             <button
               onClick={() => toggleSort('nombre')}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 sortField === 'nombre'
-                  ? 'text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
               style={
                 sortField === 'nombre'
-                  ? {
-                      background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
-                    }
+                  ? { backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }
                   : undefined
               }
             >
@@ -362,16 +356,14 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
             </button>
             <button
               onClick={() => toggleSort('documento')}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 sortField === 'documento'
-                  ? 'text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
               style={
                 sortField === 'documento'
-                  ? {
-                      background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
-                    }
+                  ? { backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }
                   : undefined
               }
             >
@@ -379,16 +371,14 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
             </button>
             <button
               onClick={() => toggleSort('fecha')}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 sortField === 'fecha'
-                  ? 'text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
               style={
                 sortField === 'fecha'
-                  ? {
-                      background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
-                    }
+                  ? { backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }
                   : undefined
               }
             >
@@ -398,24 +388,24 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
         </div>
 
         {/* TABLA */}
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     #
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Código
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Nombre en Certificado
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Estado
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Acciones
                   </th>
                 </tr>
@@ -428,32 +418,29 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
                   return (
                     <tr
                       key={participante.certificado_id}
-                      className="hover:bg-purple-50/30 transition-colors"
-                      style={{
-                        animation: `fadeIn 0.5s ease-out ${0.2 + index * 0.05}s both`
-                      }}
+                      className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center justify-center w-9 h-9 text-sm font-bold text-gray-700 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl shadow-sm">
+                        <span className="inline-flex items-center justify-center w-8 h-8 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg">
                           {globalIndex}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-1">
                           <span
-                            className="inline-flex items-center gap-2 text-xs font-mono font-bold px-3 py-2 rounded-xl shadow-md border-2 w-fit"
+                            className="inline-flex items-center gap-1.5 text-xs font-mono font-medium px-2.5 py-1.5 rounded-md border w-fit"
                             style={{
-                              backgroundColor: `${TENANT_CONFIG.PRIMARY_COLOR}10`,
+                              backgroundColor: `${TENANT_CONFIG.PRIMARY_COLOR}08`,
                               color: TENANT_CONFIG.PRIMARY_COLOR,
-                              borderColor: `${TENANT_CONFIG.PRIMARY_COLOR}30`
+                              borderColor: `${TENANT_CONFIG.PRIMARY_COLOR}20`
                             }}
                           >
-                            <FileText className="w-4 h-4" />
+                            <FileText className="w-3.5 h-3.5" />
                             {participante.codigo}
                           </span>
                           {participante.tiene_override && (
-                            <span className="inline-flex items-center gap-1.5 text-xs text-purple-700 font-bold bg-purple-100 px-2 py-1 rounded-lg w-fit">
-                              <Star className="w-3.5 h-3.5 fill-purple-600" />
+                            <span className="inline-flex items-center gap-1 text-xs text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md w-fit">
+                              <Star className="w-3 h-3 fill-purple-600" />
                               Personalizado
                             </span>
                           )}
@@ -467,10 +454,7 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
                               type="text"
                               value={nombreEditado}
                               onChange={(e) => setNombreEditado(e.target.value)}
-                              className="w-full px-4 py-2.5 border-2 rounded-xl focus:outline-none text-sm font-medium shadow-sm"
-                              style={{
-                                borderColor: TENANT_CONFIG.PRIMARY_COLOR
-                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                               placeholder="Nombre completo..."
                               disabled={regenerando === participante.certificado_id}
                             />
@@ -478,10 +462,8 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
                               <button
                                 onClick={() => guardarYRegenerar(participante.certificado_id)}
                                 disabled={regenerando === participante.certificado_id}
-                                className="flex items-center gap-2 px-4 py-2 text-white rounded-xl hover:opacity-90 transition-all text-sm font-bold shadow-lg disabled:opacity-50"
-                                style={{
-                                  background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
-                                }}
+                                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90 transition-all text-sm font-medium disabled:opacity-50"
+                                style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}
                               >
                                 {regenerando === participante.certificado_id ? (
                                   <>
@@ -498,7 +480,7 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
                               <button
                                 onClick={cancelarEdicionCertificado}
                                 disabled={regenerando === participante.certificado_id}
-                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors text-sm font-bold flex items-center gap-2 disabled:opacity-50"
+                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
                               >
                                 <X className="w-4 h-4" />
                                 Cancelar
@@ -508,18 +490,18 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
                         ) : (
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-sm font-bold text-gray-900">
+                              <p className="text-sm font-medium text-gray-900">
                                 {participante.nombre_actual || participante.nombre_completo}
                               </p>
-                              <p className="text-xs text-gray-500 mt-1 font-medium">
+                              <p className="text-xs text-gray-500 mt-0.5">
                                 DNI: {participante.numero_documento}
                               </p>
                             </div>
                             <button
                               onClick={() => iniciarEdicionCertificado(participante)}
-                              className="flex items-center gap-2 px-4 py-2 text-purple-700 hover:bg-purple-100 rounded-xl transition-all text-sm font-bold shadow-sm"
+                              className="flex items-center gap-2 px-3 py-1.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-all text-sm font-medium"
                             >
-                              <Edit2 className="w-4 h-4" />
+                              <Edit2 className="w-3.5 h-3.5" />
                               Editar
                             </button>
                           </div>
@@ -527,8 +509,8 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-green-100 text-green-800 border-2 border-green-200 shadow-sm">
-                          <CheckCircle2 className="w-4 h-4" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
                           Activo
                         </span>
                       </td>
@@ -539,7 +521,7 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
                             onClick={() =>
                               previewCertificate(participante.certificado_id, participante.codigo)
                             }
-                            className="p-2.5 text-blue-700 hover:bg-blue-100 rounded-xl transition-all shadow-sm"
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                             title="Vista previa"
                           >
                             <Eye className="w-4 h-4" />
@@ -548,7 +530,7 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
                             onClick={() =>
                               downloadCertificate(participante.certificado_id, participante.codigo)
                             }
-                            className="p-2.5 text-green-700 hover:bg-green-100 rounded-xl transition-all shadow-sm"
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
                             title="Descargar"
                           >
                             <Download className="w-4 h-4" />
@@ -563,9 +545,9 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
           </div>
 
           {filteredParticipantes.length === 0 && (
-            <div className="text-center py-16">
-              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
+            <div className="text-center py-12">
+              <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <h3 className="text-base font-semibold text-gray-900 mb-1">
                 No se encontraron certificados
               </h3>
               <p className="text-sm text-gray-500">
@@ -579,25 +561,25 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
 
         {/* PAGINACIÓN */}
         {totalPages > 1 && (
-          <div className="mt-6 bg-white rounded-3xl shadow-xl border border-gray-100 p-5">
+          <div className="mt-6 bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="text-sm text-gray-600 font-medium">
-                Mostrando <span className="font-bold text-gray-900">{startIndex + 1}</span> -{' '}
-                <span className="font-bold text-gray-900">{Math.min(endIndex, filteredParticipantes.length)}</span> de{' '}
-                <span className="font-bold text-gray-900">{filteredParticipantes.length}</span> participantes
+              <div className="text-sm text-gray-600">
+                Mostrando <span className="font-medium text-gray-900">{startIndex + 1}</span> -{' '}
+                <span className="font-medium text-gray-900">{Math.min(endIndex, filteredParticipantes.length)}</span> de{' '}
+                <span className="font-medium text-gray-900">{filteredParticipantes.length}</span> participantes
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setCurrentPage(1)}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Primera
                 </button>
                 <button
                   onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Anterior
                 </button>
@@ -618,16 +600,14 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`px-4 py-2 text-sm font-bold rounded-xl transition-all shadow-md ${
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
                           currentPage === pageNum
-                            ? 'text-white scale-110'
-                            : 'text-gray-700 bg-white border-2 border-gray-200 hover:bg-gray-50'
+                            ? 'text-white'
+                            : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
                         }`}
                         style={
                           currentPage === pageNum
-                            ? {
-                                background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
-                              }
+                            ? { backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }
                             : undefined
                         }
                       >
@@ -639,14 +619,14 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
                 <button
                   onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Siguiente
                 </button>
                 <button
                   onClick={() => setCurrentPage(totalPages)}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-2 text-sm font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Última
                 </button>
@@ -656,12 +636,12 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
         )}
 
         {/* CONSEJOS */}
-        <div className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-3xl p-6 shadow-lg">
+        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-6 h-6 text-blue-700 mt-1 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
             <div className="text-sm text-blue-900">
-              <p className="font-bold mb-2 text-base">Consejos:</p>
-              <ul className="list-disc list-inside space-y-1 text-blue-800 font-medium">
+              <p className="font-medium mb-2">Consejos:</p>
+              <ul className="list-disc list-inside space-y-1 text-blue-800">
                 <li>Haz clic en <strong>Editar</strong> para modificar el nombre en el certificado</li>
                 <li>Los cambios se guardan y el PDF se regenera automáticamente</li>
                 <li>Los certificados personalizados muestran un icono de <strong>estrella</strong></li>

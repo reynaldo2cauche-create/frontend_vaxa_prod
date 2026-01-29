@@ -51,88 +51,76 @@ export default function Header({ tenantId, usuario, config }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo y nombre - Más compacto */}
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNavigation('/')}>
+            {/* Logo y nombre */}
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => handleNavigation('/')}>
               {tenantConfig.logo ? (
                 <Image
                   src={tenantConfig.logo}
                   alt={tenantConfig.name}
-                  width={40}
-                  height={40}
-                  className="rounded-xl object-cover"
+                  width={32}
+                  height={32}
+                  className="rounded-lg object-cover transition-transform group-hover:scale-105"
                 />
               ) : (
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
-                  style={{
-                    background: `linear-gradient(135deg, ${tenantConfig.primaryColor}, ${tenantConfig.secondaryColor})`
-                  }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white transition-transform group-hover:scale-105"
+                  style={{ backgroundColor: tenantConfig.primaryColor }}
                 >
-                  <Building2 className="w-5 h-5" />
+                  <Building2 className="w-4 h-4" />
                 </div>
               )}
-              <div className="hidden sm:block">
-                <h1 className="text-base font-bold text-gray-900">{tenantConfig.name}</h1>
-              </div>
+              <h1 className="text-base font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">
+                {tenantConfig.name}
+              </h1>
             </div>
 
-            {/* Centro - Navegación con estilo pill */}
-            <nav className="hidden md:flex items-center gap-1 bg-gray-100/80 rounded-full p-1">
+            {/* Centro - Navegación minimalista */}
+            <nav className="hidden md:flex items-center gap-1">
               <button
                 onClick={() => handleNavigation('/historial')}
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                   isActive('/historial')
-                    ? 'text-white shadow-md font-bold'
-                    : 'text-gray-700 hover:bg-white hover:shadow-sm'
+                    ? 'text-gray-900 bg-gray-100'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
-                style={
-                  isActive('/historial')
-                    ? { backgroundColor: `${tenantConfig.primaryColor}60` }
-                    : undefined
-                }
               >
                 <History className="w-4 h-4" />
                 Historial
               </button>
               <button
                 onClick={() => handleNavigation('/participantes')}
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                   isActive('/participantes')
-                    ? 'text-white shadow-md font-bold'
-                    : 'text-gray-700 hover:bg-white hover:shadow-sm'
+                    ? 'text-gray-900 bg-gray-100'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
-                style={
-                  isActive('/participantes')
-                    ? { backgroundColor: `${tenantConfig.primaryColor}60` }
-                    : undefined
-                }
               >
                 <Users className="w-4 h-4" />
                 Participantes
               </button>
             </nav>
 
-            {/* Derecha - Usuario con badge */}
+            {/* Derecha - Usuario */}
             <div className="flex items-center gap-3">
               {/* Desktop */}
               <div className="hidden md:block">
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-gray-100 transition-all"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all group"
                   >
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-gray-900">{usuario.nombre}</p>
+                      <p className="text-sm font-medium text-gray-900 group-hover:text-gray-700 transition-colors">
+                        {usuario.nombre}
+                      </p>
                       <p className="text-xs text-gray-500">{usuario.role}</p>
                     </div>
                     <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold shadow-md"
-                      style={{
-                        background: `linear-gradient(135deg, ${tenantConfig.primaryColor}, ${tenantConfig.secondaryColor})`
-                      }}
+                      className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-semibold transition-transform group-hover:scale-105"
+                      style={{ backgroundColor: tenantConfig.primaryColor }}
                     >
                       {usuario.nombre.charAt(0).toUpperCase()}
                     </div>
@@ -144,15 +132,13 @@ export default function Header({ tenantId, usuario, config }: HeaderProps) {
                         className="fixed inset-0 z-40" 
                         onClick={() => setShowUserMenu(false)}
                       />
-                      <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 overflow-hidden z-50">
-                        <div className="px-4 py-3 border-b border-gray-100">
-                          <p className="text-sm font-bold text-gray-900">{usuario.nombre}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{usuario.email}</p>
+                      <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50 animate-fade-in">
+                        <div className="p-4 border-b border-gray-100">
+                          <p className="text-sm font-semibold text-gray-900">{usuario.nombre}</p>
+                          <p className="text-xs text-gray-500 mt-1">{usuario.email}</p>
                           <span 
-                            className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold text-white"
-                            style={{
-                              background: `linear-gradient(135deg, ${tenantConfig.primaryColor}, ${tenantConfig.secondaryColor})`
-                            }}
+                            className="inline-block mt-3 px-2.5 py-1 rounded-md text-xs font-medium text-white"
+                            style={{ backgroundColor: tenantConfig.primaryColor }}
                           >
                             {usuario.role}
                           </span>
@@ -173,7 +159,7 @@ export default function Header({ tenantId, usuario, config }: HeaderProps) {
               {/* Mobile menu button */}
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className="md:hidden w-10 h-10 rounded-xl flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-all"
+                className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center text-gray-700 hover:bg-gray-50 transition-all"
               >
                 {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -184,30 +170,26 @@ export default function Header({ tenantId, usuario, config }: HeaderProps) {
 
       {/* Mobile menu */}
       {showMobileMenu && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={() => setShowMobileMenu(false)}>
+        <div className="md:hidden fixed inset-0 z-40 bg-black/5 backdrop-blur-sm" onClick={() => setShowMobileMenu(false)}>
           <div 
-            className="absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-xl"
+            className="absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg animate-slide-down"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="max-w-7xl mx-auto px-6 py-6">
               {/* Usuario info */}
-              <div className="flex items-center gap-3 pb-4 border-b border-gray-200 mb-4">
+              <div className="flex items-center gap-3 pb-6 border-b border-gray-100 mb-4">
                 <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-md"
-                  style={{
-                    background: `linear-gradient(135deg, ${tenantConfig.primaryColor}, ${tenantConfig.secondaryColor})`
-                  }}
+                  className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-semibold"
+                  style={{ backgroundColor: tenantConfig.primaryColor }}
                 >
                   {usuario.nombre.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">{usuario.nombre}</p>
-                  <p className="text-xs text-gray-500">{usuario.email}</p>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-900">{usuario.nombre}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{usuario.email}</p>
                   <span 
-                    className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold text-white"
-                    style={{
-                      background: `linear-gradient(135deg, ${tenantConfig.primaryColor}, ${tenantConfig.secondaryColor})`
-                    }}
+                    className="inline-block mt-2 px-2.5 py-1 rounded-md text-xs font-medium text-white"
+                    style={{ backgroundColor: tenantConfig.primaryColor }}
                   >
                     {usuario.role}
                   </span>
@@ -218,21 +200,33 @@ export default function Header({ tenantId, usuario, config }: HeaderProps) {
               <div className="space-y-1">
                 <button
                   onClick={() => handleNavigation('/historial')}
-                  className="w-full px-4 py-3 rounded-xl text-left text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-3"
+                  className={`w-full px-4 py-3 rounded-lg text-left text-sm font-medium transition-colors flex items-center gap-3 ${
+                    isActive('/historial')
+                      ? 'text-gray-900 bg-gray-100'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
                 >
                   <History className="w-5 h-5" />
                   Historial
                 </button>
                 <button
                   onClick={() => handleNavigation('/participantes')}
-                  className="w-full px-4 py-3 rounded-xl text-left text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-3"
+                  className={`w-full px-4 py-3 rounded-lg text-left text-sm font-medium transition-colors flex items-center gap-3 ${
+                    isActive('/participantes')
+                      ? 'text-gray-900 bg-gray-100'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
                 >
                   <Users className="w-5 h-5" />
                   Participantes
                 </button>
+              </div>
+
+              {/* Logout */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
                 <button
                   onClick={handleLogout}
-                  className="w-full px-4 py-3 rounded-xl text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 border-t border-gray-200 mt-2 pt-4"
+                  className="w-full px-4 py-3 rounded-lg text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3"
                 >
                   <LogOut className="w-5 h-5" />
                   Cerrar sesión
@@ -242,6 +236,39 @@ export default function Header({ tenantId, usuario, config }: HeaderProps) {
           </div>
         </div>
       )}
+
+      {/* Animations */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(-4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slide-down {
+          from {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out;
+        }
+
+        .animate-slide-down {
+          animation: slide-down 0.2s ease-out;
+        }
+      `}</style>
     </>
   );
 }

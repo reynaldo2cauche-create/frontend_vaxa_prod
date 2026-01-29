@@ -7,7 +7,10 @@ import {
   FileText,
   Calendar,
   TrendingUp,
-  Loader2
+  Loader2,
+  Activity,
+  CheckCircle2,
+  ArrowRight,
 } from 'lucide-react';
 import { TENANT_CONFIG } from '../../shared/constants';
 import { Header } from '../../shared/components';
@@ -69,8 +72,8 @@ export default function TechProDashboard({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
       </div>
     );
   }
@@ -80,196 +83,255 @@ export default function TechProDashboard({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
+      {/* Subtle background grid - Vercel style */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div 
+          className="absolute inset-0 opacity-[0.15]"
+          style={{
+            background: `radial-gradient(circle at 50% 0%, ${TENANT_CONFIG.PRIMARY_COLOR}15, transparent 50%)`
+          }}
+        ></div>
+      </div>
+
       {/* HEADER */}
       <Header tenantId={tenantId} usuario={usuario} />
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
-        {/* Header con bienvenida */}
-        <div className="mb-10 animate-[fadeIn_0.6s_ease-out]">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+      <main className="max-w-7xl mx-auto px-6 lg:px-8 py-8 md:py-12">
+        {/* Welcome Section */}
+        <div className="mb-12 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium mb-4">
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}></div>
+            <span>Dashboard Personalizado</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-2">
             Hola, {usuario.nombre.split(' ')[0]} 👋
-          </h2>
+          </h1>
           <p className="text-gray-600 text-lg">
             Aquí tienes un resumen de tu actividad
           </p>
         </div>
 
-        {/* ESTADÍSTICAS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        {/* ESTADÍSTICAS - Vercel Cards Style */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 animate-fade-in-delay-1">
           {/* Card 1 - Total Certificados */}
-          <div className="bg-white rounded-3xl p-7 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 group hover:-translate-y-2 animate-[slideUp_0.6s_ease-out_0.1s_both]">
-            <div className="flex items-center justify-between mb-5">
-              <div
-                className="relative w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg"
+          <div className="group p-6 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <div 
+                className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110"
                 style={{ backgroundColor: `${TENANT_CONFIG.PRIMARY_COLOR}15` }}
               >
-                <div
-                  className="absolute inset-0 rounded-2xl blur-xl opacity-30"
-                  style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}
-                />
-                <FileText className="w-8 h-8 relative" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }} />
+                <FileText className="w-5 h-5" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }} />
               </div>
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Total
               </span>
             </div>
             <p
-              className="text-5xl font-bold mb-2"
+              className="text-3xl font-bold mb-1"
               style={{ color: TENANT_CONFIG.PRIMARY_COLOR }}
             >
               {stats.total_certificados.toLocaleString()}
             </p>
-            <p className="text-sm text-gray-500 font-medium">Certificados emitidos</p>
+            <p className="text-sm text-gray-600">Certificados emitidos</p>
           </div>
 
           {/* Card 2 - Este Mes */}
-          <div className="bg-white rounded-3xl p-7 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 group hover:-translate-y-2 animate-[slideUp_0.6s_ease-out_0.2s_both]">
-            <div className="flex items-center justify-between mb-5">
-              <div
-                className="relative w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg"
+          <div className="group p-6 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <div 
+                className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110"
                 style={{ backgroundColor: `${TENANT_CONFIG.PRIMARY_COLOR}15` }}
               >
-                <div
-                  className="absolute inset-0 rounded-2xl blur-xl opacity-30"
-                  style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}
-                />
-                <Calendar className="w-8 h-8 relative" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }} />
+                <Calendar className="w-5 h-5" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }} />
               </div>
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Mes
               </span>
             </div>
             <p
-              className="text-5xl font-bold mb-2"
+              className="text-3xl font-bold mb-1"
               style={{ color: TENANT_CONFIG.PRIMARY_COLOR }}
             >
               {stats.certificados_mes.toLocaleString()}
             </p>
-            <p className="text-sm text-gray-500 font-medium">Nuevos este mes</p>
+            <p className="text-sm text-gray-600">Nuevos este mes</p>
           </div>
 
           {/* Card 3 - Actividad */}
-          <div className="bg-white rounded-3xl p-7 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 group hover:-translate-y-2 animate-[slideUp_0.6s_ease-out_0.3s_both]">
-            <div className="flex items-center justify-between mb-5">
-              <div
-                className="relative w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg"
+          <div className="group p-6 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <div 
+                className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110"
                 style={{ backgroundColor: `${TENANT_CONFIG.PRIMARY_COLOR}15` }}
               >
-                <div
-                  className="absolute inset-0 rounded-2xl blur-xl opacity-30"
-                  style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}
-                />
-                <TrendingUp className="w-8 h-8 relative" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }} />
+                <TrendingUp className="w-5 h-5" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }} />
               </div>
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Último
               </span>
             </div>
             <p
-              className="text-2xl font-bold mb-2 truncate"
+              className="text-xl font-bold mb-1 truncate"
               style={{ color: TENANT_CONFIG.PRIMARY_COLOR }}
             >
               {stats.ultimo_lote || 'Sin actividad'}
             </p>
-            <p className="text-sm text-gray-500 font-medium">Lote generado</p>
+            <p className="text-sm text-gray-600">Lote generado</p>
           </div>
         </div>
 
-        {/* Sección de actividad reciente */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-          <div className="bg-white rounded-3xl p-7 border border-gray-100 shadow-lg hover:shadow-xl transition-all animate-[slideUp_0.6s_ease-out_0.4s_both]">
-            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }}>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Actividad Reciente
-            </h3>
+        {/* Sección de actividad y estado */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-12 animate-fade-in-delay-2">
+          {/* Actividad Reciente */}
+          <div className="p-6 bg-white border border-gray-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-6">
+              <Activity className="w-5 h-5" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }} />
+              <h3 className="text-base font-semibold text-gray-900">Actividad Reciente</h3>
+            </div>
             <div className="space-y-3">
-              <div className="flex items-start space-x-3 p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all shadow-sm hover:shadow-md">
-                <div className="w-2.5 h-2.5 rounded-full mt-2 shadow-lg" style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}></div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-900">Sistema iniciado</p>
-                  <p className="text-xs text-gray-500 mt-1">Hace unos momentos</p>
+              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="w-2 h-2 rounded-full mt-1.5" style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}></div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900">Sistema iniciado</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Hace unos momentos</p>
                 </div>
               </div>
-              <div className="flex items-start space-x-3 p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-all shadow-sm hover:shadow-md">
-                <div className="w-2.5 h-2.5 rounded-full mt-2 shadow-lg" style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}></div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-900">Dashboard personalizado cargado</p>
-                  <p className="text-xs text-gray-500 mt-1">Vista exclusiva de {TENANT_CONFIG.NAME}</p>
+              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="w-2 h-2 rounded-full mt-1.5" style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}></div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900">Dashboard personalizado cargado</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Vista exclusiva de {TENANT_CONFIG.NAME}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-7 border border-gray-100 shadow-lg hover:shadow-xl transition-all animate-[slideUp_0.6s_ease-out_0.5s_both]">
-            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }}>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Estado del Sistema
-            </h3>
+          {/* Estado del Sistema */}
+          <div className="p-6 bg-white border border-gray-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-6">
+              <CheckCircle2 className="w-5 h-5" style={{ color: TENANT_CONFIG.PRIMARY_COLOR }} />
+              <h3 className="text-base font-semibold text-gray-900">Estado del Sistema</h3>
+            </div>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-all shadow-sm hover:shadow-md">
-                <span className="text-sm font-semibold text-gray-900">Sistema Operativo</span>
-                <span className="px-3 py-1.5 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg">Activo</span>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-900">Sistema Operativo</span>
+                <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-md">
+                  Activo
+                </span>
               </div>
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-all shadow-sm hover:shadow-md">
-                <span className="text-sm font-semibold text-gray-900">Autenticación</span>
-                <span className="px-3 py-1.5 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg">Conectado</span>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-900">Autenticación</span>
+                <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-md">
+                  Conectado
+                </span>
               </div>
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-all shadow-sm hover:shadow-md">
-                <span className="text-sm font-semibold text-gray-900">Módulo Dashboard</span>
-                <span className="px-3 py-1.5 text-white text-xs font-semibold rounded-full shadow-lg" style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}>Personalizado</span>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-900">Módulo Dashboard</span>
+                <span 
+                  className="px-2.5 py-1 text-white text-xs font-medium rounded-md"
+                  style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}
+                >
+                  Personalizado
+                </span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Generador de Certificados */}
-        <div className="animate-[slideUp_0.6s_ease-out_0.6s_both]">
+        <div className="mb-12 animate-fade-in-delay-3">
           <GeneradorCertificados />
         </div>
 
         {/* Información del tenant */}
-        <div className="bg-white rounded-3xl p-8 border border-gray-100 mt-10 shadow-lg animate-[slideUp_0.6s_ease-out_0.7s_both]">
-          <h3 className="text-xl font-bold text-gray-900 mb-7">Información del Sistema</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="p-5 bg-gray-50 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-              <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider font-semibold">Nombre de la Empresa</p>
-              <p className="text-base font-bold text-gray-900">{TENANT_CONFIG.NAME}</p>
+        <div className="p-6 bg-white border border-gray-200 rounded-lg animate-fade-in-delay-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Información del Sistema</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                Nombre de la Empresa
+              </p>
+              <p className="text-sm font-semibold text-gray-900">{TENANT_CONFIG.NAME}</p>
             </div>
-            <div className="p-5 bg-gray-50 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-              <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider font-semibold">Tenant ID</p>
-              <p className="text-base font-bold text-gray-900 font-mono">{tenantId}</p>
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                Tenant ID
+              </p>
+              <p className="text-sm font-mono font-semibold text-gray-900">{tenantId}</p>
             </div>
-            <div className="p-5 bg-gray-50 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-              <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider font-semibold">Usuario Activo</p>
-              <p className="text-base font-bold text-gray-900">{usuario.nombre}</p>
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                Usuario Activo
+              </p>
+              <p className="text-sm font-semibold text-gray-900">{usuario.nombre}</p>
             </div>
-            <div className="p-5 bg-gray-50 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-              <p className="text-xs text-gray-500 mb-2 uppercase tracking-wider font-semibold">Rol</p>
-              <p className="text-base font-bold text-gray-900 capitalize">{usuario.role}</p>
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                Rol
+              </p>
+              <p className="text-sm font-semibold text-gray-900 capitalize">{usuario.role}</p>
             </div>
           </div>
           <div
-            className="mt-6 p-5 rounded-2xl shadow-inner"
-            style={{ backgroundColor: `${TENANT_CONFIG.PRIMARY_COLOR}10` }}
+            className="mt-6 p-4 rounded-lg border"
+            style={{ 
+              backgroundColor: `${TENANT_CONFIG.PRIMARY_COLOR}08`,
+              borderColor: `${TENANT_CONFIG.PRIMARY_COLOR}20`
+            }}
           >
             <p className="text-sm text-gray-700">
               <strong>Nota:</strong> Dashboard personalizado para {TENANT_CONFIG.NAME}, ubicado en{' '}
-              <code className="bg-white px-2 py-1 rounded-lg text-xs font-mono text-gray-800 shadow-sm">/modules/extensions/empresa-techpro/modules/Dashboard</code>
+              <code className="px-2 py-0.5 bg-white border border-gray-200 rounded text-xs font-mono text-gray-800">
+                /modules/extensions/empresa-techpro/modules/Dashboard
+              </code>
             </p>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-10 text-sm text-gray-400">
-          <p>Powered by <strong className="text-gray-600">VAXA</strong> - Sistema de Gestión Empresarial</p>
+        <div className="text-center mt-12 pt-8 border-t border-gray-200">
+          <p className="text-sm text-gray-500">
+            Powered by <strong className="text-gray-900">VAXA</strong> · Sistema de Gestión Empresarial
+          </p>
         </div>
       </main>
+
+      {/* Animations */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+        }
+
+        .animate-fade-in-delay-1 {
+          animation: fade-in 0.5s ease-out 0.1s both;
+        }
+
+        .animate-fade-in-delay-2 {
+          animation: fade-in 0.5s ease-out 0.2s both;
+        }
+
+        .animate-fade-in-delay-3 {
+          animation: fade-in 0.5s ease-out 0.3s both;
+        }
+
+        .animate-fade-in-delay-4 {
+          animation: fade-in 0.5s ease-out 0.4s both;
+        }
+      `}</style>
     </div>
   );
 }

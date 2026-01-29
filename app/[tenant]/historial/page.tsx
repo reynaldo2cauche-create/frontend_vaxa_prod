@@ -1,6 +1,7 @@
 import { getTenantConfig } from '@/lib/tenants';
 import { notFound } from 'next/navigation';
-import HistorialLotes from '@/modules/extensions/empresa-techpro/modules/HistorialLotes';
+import { loadModule } from '@/lib/module-loader';
+import AuthGuard from '../AuthGuard';
 
 interface PageProps {
   params: Promise<{
@@ -16,10 +17,18 @@ export default async function HistorialPage({ params }: PageProps) {
     notFound();
   }
 
-  // Solo empresa-techpro tiene esta funcionalidad por ahora
-  if (tenantId !== 'empresa-techpro') {
+  // Cargar módulo HistorialLotes usando el mismo sistema que Dashboard
+  let HistorialModule;
+  try {
+    HistorialModule = await loadModule('HistorialLotes', tenantId);
+  } catch (error) {
+    // Si el tenant no tiene este módulo, 404
     notFound();
   }
 
-  return <HistorialLotes tenantId={tenantId} tenant={tenant} />;
+  return (
+    <AuthGuard tenantId={tenantId}>
+      <HistorialModule tenantId={tenantId} tenant={tenant} />
+    </AuthGuard>
+  );
 }

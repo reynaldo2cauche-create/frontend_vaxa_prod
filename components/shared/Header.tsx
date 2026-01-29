@@ -3,7 +3,6 @@
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { LogOut, Building2, History, Users, Menu, X } from 'lucide-react';
-import { TENANT_CONFIG } from '../../modules/extensions/empresa-techpro/shared/constants';
 import { useState } from 'react';
 
 interface HeaderProps {
@@ -13,13 +12,26 @@ interface HeaderProps {
     email: string;
     role: string;
   };
+  config?: {
+    logo?: string;
+    name: string;
+    primaryColor: string;
+    secondaryColor: string;
+  };
 }
 
-export default function Header({ tenantId, usuario }: HeaderProps) {
+export default function Header({ tenantId, usuario, config }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  // Valores por defecto si no se pasa config
+  const tenantConfig = config || {
+    name: tenantId,
+    primaryColor: '#6366f1',
+    secondaryColor: '#8b5cf6'
+  };
 
   const handleLogout = () => {
     localStorage.removeItem(`auth_${tenantId}`);
@@ -44,10 +56,10 @@ export default function Header({ tenantId, usuario }: HeaderProps) {
           <div className="flex justify-between items-center h-16">
             {/* Logo y nombre - Más compacto */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNavigation('/')}>
-              {TENANT_CONFIG.LOGO ? (
+              {tenantConfig.logo ? (
                 <Image
-                  src={TENANT_CONFIG.LOGO}
-                  alt={TENANT_CONFIG.NAME}
+                  src={tenantConfig.logo}
+                  alt={tenantConfig.name}
                   width={40}
                   height={40}
                   className="rounded-xl object-cover"
@@ -56,14 +68,14 @@ export default function Header({ tenantId, usuario }: HeaderProps) {
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
                   style={{
-                    background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
+                    background: `linear-gradient(135deg, ${tenantConfig.primaryColor}, ${tenantConfig.secondaryColor})`
                   }}
                 >
                   <Building2 className="w-5 h-5" />
                 </div>
               )}
               <div className="hidden sm:block">
-                <h1 className="text-base font-bold text-gray-900">{TENANT_CONFIG.NAME}</h1>
+                <h1 className="text-base font-bold text-gray-900">{tenantConfig.name}</h1>
               </div>
             </div>
 
@@ -78,7 +90,7 @@ export default function Header({ tenantId, usuario }: HeaderProps) {
                 }`}
                 style={
                   isActive('/historial')
-                    ? { backgroundColor: `${TENANT_CONFIG.PRIMARY_COLOR}60` }
+                    ? { backgroundColor: `${tenantConfig.primaryColor}60` }
                     : undefined
                 }
               >
@@ -94,7 +106,7 @@ export default function Header({ tenantId, usuario }: HeaderProps) {
                 }`}
                 style={
                   isActive('/participantes')
-                    ? { backgroundColor: `${TENANT_CONFIG.PRIMARY_COLOR}60` }
+                    ? { backgroundColor: `${tenantConfig.primaryColor}60` }
                     : undefined
                 }
               >
@@ -119,7 +131,7 @@ export default function Header({ tenantId, usuario }: HeaderProps) {
                     <div
                       className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold shadow-md"
                       style={{
-                        background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
+                        background: `linear-gradient(135deg, ${tenantConfig.primaryColor}, ${tenantConfig.secondaryColor})`
                       }}
                     >
                       {usuario.nombre.charAt(0).toUpperCase()}
@@ -139,7 +151,7 @@ export default function Header({ tenantId, usuario }: HeaderProps) {
                           <span 
                             className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold text-white"
                             style={{
-                              background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
+                              background: `linear-gradient(135deg, ${tenantConfig.primaryColor}, ${tenantConfig.secondaryColor})`
                             }}
                           >
                             {usuario.role}
@@ -183,7 +195,7 @@ export default function Header({ tenantId, usuario }: HeaderProps) {
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-md"
                   style={{
-                    background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
+                    background: `linear-gradient(135deg, ${tenantConfig.primaryColor}, ${tenantConfig.secondaryColor})`
                   }}
                 >
                   {usuario.nombre.charAt(0).toUpperCase()}
@@ -194,7 +206,7 @@ export default function Header({ tenantId, usuario }: HeaderProps) {
                   <span 
                     className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold text-white"
                     style={{
-                      background: `linear-gradient(135deg, ${TENANT_CONFIG.PRIMARY_COLOR}, ${TENANT_CONFIG.SECONDARY_COLOR})`
+                      background: `linear-gradient(135deg, ${tenantConfig.primaryColor}, ${tenantConfig.secondaryColor})`
                     }}
                   >
                     {usuario.role}

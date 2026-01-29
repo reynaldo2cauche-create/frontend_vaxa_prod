@@ -1,27 +1,26 @@
 import { getTenantConfig } from '@/lib/tenants';
 import { notFound } from 'next/navigation';
 import { loadModule } from '@/lib/module-loader';
-import AuthGuard from '../../../AuthGuard';
+import AuthGuard from '../AuthGuard';
 
 interface PageProps {
   params: Promise<{
     tenant: string;
-    loteId: string;
   }>;
 }
 
-export default async function CertificadosPage({ params }: PageProps) {
-  const { tenant: tenantId, loteId } = await params;
+export default async function ParticipantesPage({ params }: PageProps) {
+  const { tenant: tenantId } = await params;
   const tenant = getTenantConfig(tenantId);
 
   if (!tenant) {
     notFound();
   }
 
-  // Cargar módulo Certificados usando el mismo sistema que Dashboard
-  let CertificadosModule;
+  // Cargar módulo Participantes usando el mismo sistema que Dashboard
+  let ParticipantesModule;
   try {
-    CertificadosModule = await loadModule('Certificados', tenantId);
+    ParticipantesModule = await loadModule('Participantes', tenantId);
   } catch (error) {
     // Si el tenant no tiene este módulo, 404
     notFound();
@@ -29,7 +28,7 @@ export default async function CertificadosPage({ params }: PageProps) {
 
   return (
     <AuthGuard tenantId={tenantId}>
-      <CertificadosModule tenantId={tenantId} tenant={tenant} loteId={loteId} />
+      <ParticipantesModule tenantId={tenantId} tenant={tenant} />
     </AuthGuard>
   );
 }

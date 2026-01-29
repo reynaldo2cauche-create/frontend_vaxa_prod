@@ -38,7 +38,7 @@ const tenants: Record<string, TenantConfig> = {
       facturacion: false,
       participantes: true, // Habilitar participantes
     },
-    customModules: ['Dashboard', 'Login', 'Participantes'], // Agregar Participantes
+    customModules: ['Dashboard', 'Login', 'Participantes', 'HistorialLotes', 'Certificados'],
   },
   'sistemas-vaxa':{
     id: 'sistemas-vaxa',

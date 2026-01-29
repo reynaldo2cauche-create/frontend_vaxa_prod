@@ -23,8 +23,9 @@ import {
   ChevronUp,
   ArrowLeft
 } from 'lucide-react';
+import Header from '@/components/shared/Header';
 import { TENANT_CONFIG } from '../../shared/constants';
-import { Header } from '../../shared/components';
+import { getHeaderConfig } from '../../shared/utils/config';
 
 interface ParticipantesProps {
   tenantId: string;
@@ -324,7 +325,7 @@ export default function Participantes({ tenantId, tenant }: ParticipantesProps) 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* HEADER NAVBAR */}
-      <Header tenantId={tenantId} usuario={usuario} />
+      <Header tenantId={tenantId} usuario={usuario} config={getHeaderConfig()} />
 
       {/* MAIN CONTENT */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

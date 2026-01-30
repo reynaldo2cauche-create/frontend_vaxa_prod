@@ -1,4 +1,4 @@
-// Utilidades para manejar tenants (empresas/centros)
+
 
 export interface TenantConfig {
   id: string;
@@ -51,8 +51,12 @@ const tenants: Record<string, TenantConfig> = {
       citas: false,
       terapeutas: false,
       facturacion: false,
+      participantes: true ,
+      
+      
+
     },
-    customModules: ['Dashboard', 'Login', 'Sistemas', 'Usuarios', 'Configuracion', 'Planes'],
+    customModules: ['Dashboard', 'Login', 'Sistemas', 'Usuarios', 'Configuracion', 'Planes','GestionSistema'],
   }
 };
 

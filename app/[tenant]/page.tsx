@@ -22,6 +22,11 @@ export default async function TenantPage({ params }: TenantPageProps) {
     redirect(`/${tenantId}/sistemas`);
   }
 
+  // Para certificaciones, redirigir al dashboard
+  if (tenantId === 'certificaciones') {
+    redirect(`/${tenantId}/dashboard`);
+  }
+
   // Si solo tiene dashboard habilitado, redirigir al dashboard
   const enabledModules = Object.entries(tenant.modules).filter(([_, enabled]) => enabled);
   if (enabledModules.length === 1 && tenant.modules.dashboard) {

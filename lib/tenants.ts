@@ -56,7 +56,7 @@ const tenants: Record<string, TenantConfig> = {
       
 
     },
-    customModules: ['Dashboard', 'Login', 'Sistemas', 'Usuarios', 'Configuracion', 'Planes','GestionSistema'],
+    customModules:[ 'Login', 'Sistemas', 'Usuarios',],
   }
 };
 

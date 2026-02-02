@@ -16,14 +16,15 @@ import {
   Calendar,
   Edit,
 } from '@/components/ui/icon';
-import Header from '@/components/shared/Header';
+import HeaderSistemasVaxa from '../../shared/components/HeaderSistemasVaxa';
 import { EMPRESAS_MOCK } from '../../shared/data/mockData';
+import { VAXA_CONFIG } from '../../shared/constants';
 
 // Configuración específica del sistema de certificaciones
 const CERTIFICACIONES_CONFIG = {
   NAME: 'Sistema de Certificaciones',
-  PRIMARY_COLOR: '#ea6733',
-  SECONDARY_COLOR: '#b63b19',
+  PRIMARY_COLOR: VAXA_CONFIG.PRIMARY_COLOR, // Verde de sistemas-vaxa
+  SECONDARY_COLOR: VAXA_CONFIG.SECONDARY_COLOR,
 };
 import TabInformacion from './TabInformacion';
 import TabPlan from './TabPlan';
@@ -105,7 +106,7 @@ export default function PerfilEmpresa({ tenantId, tenant, empresaId }: PerfilEmp
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header
+      <HeaderSistemasVaxa
         tenantId={tenantId}
         usuario={usuario}
         config={{

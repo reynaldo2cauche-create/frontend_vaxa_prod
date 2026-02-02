@@ -14,14 +14,14 @@ import {
   Upload,
   X,
 } from '@/components/ui/icon';
-import Header from '@/components/shared/Header';
-import { PLANES } from '../../shared/constants';
+import HeaderSistemasVaxa from '../../shared/components/HeaderSistemasVaxa';
+import { PLANES, VAXA_CONFIG } from '../../shared/constants';
 
 // Configuración específica del sistema de certificaciones
 const CERTIFICACIONES_CONFIG = {
   NAME: 'Sistema de Certificaciones',
-  PRIMARY_COLOR: '#ea6733',
-  SECONDARY_COLOR: '#b63b19',
+  PRIMARY_COLOR: VAXA_CONFIG.PRIMARY_COLOR, // Verde de sistemas-vaxa
+  SECONDARY_COLOR: VAXA_CONFIG.SECONDARY_COLOR,
 };
 
 interface RegistrarEmpresaCertificacionesProps {
@@ -135,7 +135,7 @@ export default function RegistrarEmpresaCertificaciones({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header
+      <HeaderSistemasVaxa
         tenantId={tenantId}
         usuario={usuario}
         config={{

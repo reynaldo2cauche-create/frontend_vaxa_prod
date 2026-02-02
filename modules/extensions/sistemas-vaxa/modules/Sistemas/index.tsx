@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Building2,
 } from '@/components/ui/icon';
-import Header from '@/components/shared/Header';
+import HeaderSistemasVaxa from '../../shared/components/HeaderSistemasVaxa';
 import { VAXA_CONFIG } from '../../shared/constants';
 import { SISTEMAS_MOCK } from '../../shared/data/mockData';
 
@@ -75,7 +75,7 @@ export default function Sistemas({ tenantId, tenant }: SistemasProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header
+      <HeaderSistemasVaxa
         tenantId={tenantId}
         usuario={usuario}
         config={{

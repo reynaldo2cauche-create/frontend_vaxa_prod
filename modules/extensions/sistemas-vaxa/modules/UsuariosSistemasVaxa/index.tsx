@@ -12,7 +12,7 @@ import {
   Edit,
   Search,
 } from '@/components/ui/icon';
-import Header from '@/components/shared/Header';
+import HeaderSistemasVaxa from '../../shared/components/HeaderSistemasVaxa';
 import { VAXA_CONFIG } from '../../shared/constants';
 
 interface UsuariosSistemasVaxaProps {
@@ -108,7 +108,7 @@ export default function UsuariosSistemasVaxa({ tenantId, tenant }: UsuariosSiste
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header
+      <HeaderSistemasVaxa
         tenantId={tenantId}
         usuario={usuario}
         config={{

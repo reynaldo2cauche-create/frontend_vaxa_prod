@@ -30,5 +30,5 @@ export default async function LoginPage({ params }: LoginPageProps) {
     notFound();
   }
 
-  return <LoginModule params={params} />;
+  return <LoginModule tenantId={tenantId} tenant={tenant} />;
 }

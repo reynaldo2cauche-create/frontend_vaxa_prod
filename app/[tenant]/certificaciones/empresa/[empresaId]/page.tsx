@@ -1,16 +1,17 @@
 import { use } from 'react';
 import { getTenantConfig } from '@/lib/tenants';
 import { redirect } from 'next/navigation';
-import UsuariosSistemasVaxa from '@/modules/extensions/sistemas-vaxa/modules/UsuariosSistemasVaxa';
+import PerfilEmpresa from '@/modules/extensions/sistemas-vaxa/modules/PerfilEmpresa';
 
 interface PageProps {
   params: Promise<{
     tenant: string;
+    empresaId: string;
   }>;
 }
 
-export default function UsuariosPage({ params }: PageProps) {
-  const { tenant: tenantId } = use(params);
+export default function EmpresaPerfilPage({ params }: PageProps) {
+  const { tenant: tenantId, empresaId } = use(params);
   const tenant = getTenantConfig(tenantId);
 
   if (!tenant) {
@@ -21,5 +22,5 @@ export default function UsuariosPage({ params }: PageProps) {
     redirect(`/${tenantId}`);
   }
 
-  return <UsuariosSistemasVaxa tenantId={tenantId} tenant={tenant} />;
+  return <PerfilEmpresa tenantId={tenantId} tenant={tenant} empresaId={empresaId} />;
 }

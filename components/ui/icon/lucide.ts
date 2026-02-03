@@ -14,7 +14,72 @@ import {
   EyeOff,
   AlertCircle,
   Loader2,
-  type LucideIcon as LucideIconType,
+
+  FileText,
+  Calendar,
+  Download,
+
+  Edit2,
+  Save,
+  X,
+  RefreshCw,
+  Package,
+  Users,
+ 
+  Star,
+  ChevronDown,
+  ChevronUp,
+  ArrowLeft,
+  
+  CheckCircle,
+  XCircle,
+  Award,
+
+  Shield,
+  Clock,
+
+  Verified,
+  Sparkles,
+ 
+  FolderOpen,
+ 
+  TrendingUp,
+ 
+  Activity,
+  
+  ArrowRight,
+  
+  Upload,
+  FileSpreadsheet,
+  Type,
+  PenTool,
+ 
+  CheckCircle2,
+  ChevronRight,
+  
+  Image as ImageIcon,
+ 
+    CreditCard,
+
+ 
+  Zap,
+   FileImage,
+
+  Unlock,
+  Check,
+
+ 
+  FileSignature,
+
+  BarChart3,
+ 
+  LayoutDashboard,
+ 
+ Phone, MapPin, Globe,
+ DollarSign,
+ LogIn,
+   Info,
+  type LucideIcon,
 } from 'lucide-react';
 
 export const lucideIcons = {
@@ -54,5 +119,62 @@ export {
   EyeOff,
   AlertCircle,
   Loader2,
+   FileText,
+  Calendar,
+  Download,
+  Edit2,
+  Save,
+  X,
+  RefreshCw,
+  Package,
+  Users,
+  Star,
+  ChevronDown,
+  ChevronUp,
+  ArrowLeft,
+   CheckCircle,
+  XCircle,
+  Award,
+
+  Shield,
+  Clock,
+
+  Verified,
+  Sparkles,
+  FolderOpen,
+    TrendingUp,
+ 
+  Activity,
+
+  ArrowRight,
+  
+ 
+ 
+  
+
+  
+  
+   
+  Upload,
+  FileSpreadsheet,
+  Type,
+  PenTool,
+
+  CheckCircle2,
+  ChevronRight,
+
+  ImageIcon,
+   CreditCard,
+  Check,
+  Zap,
+  FileImage,
+  Unlock,
+  FileSignature,
+  BarChart3,
+  LayoutDashboard,
+   Phone, MapPin, Globe,
+   DollarSign,
+     Info,
+     LogIn,
 };
-export type { LucideIconType };
+  export type { LucideIcon };

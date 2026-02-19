@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
 import {
   FileText,
@@ -39,7 +39,7 @@ export default function TechProDashboard({
   tenantId,
   tenant,
 }: DashboardProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
@@ -54,7 +54,7 @@ export default function TechProDashboard({
     const userData = localStorage.getItem(`auth_user_${tenantId}`);
 
     if (!authData || authData !== 'true') {
-      router.push(`/${tenantId}/login`);
+      navigate(`/${tenantId}/login`);
       return;
     }
 
@@ -64,13 +64,13 @@ export default function TechProDashboard({
         setUsuario(user);
       } catch (error) {
         console.error('Error al parsear usuario:', error);
-        router.push(`/${tenantId}/login`);
+        navigate(`/${tenantId}/login`);
         return;
       }
     }
 
     setLoading(false);
-  }, [tenantId, router]);
+  }, [tenantId, navigate]);
 
   if (loading) {
     return (

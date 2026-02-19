@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
 import {
   ArrowLeft,
@@ -52,7 +52,7 @@ export default function RegistrarEmpresaCertificaciones({
   tenantId,
   tenant,
 }: RegistrarEmpresaCertificacionesProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -76,7 +76,7 @@ export default function RegistrarEmpresaCertificaciones({
     const userData = localStorage.getItem(`auth_user_${tenantId}`);
 
     if (!authData || authData !== 'true') {
-      router.push(`/${tenantId}/login`);
+      navigate(`/${tenantId}/login`);
       return;
     }
 
@@ -85,10 +85,10 @@ export default function RegistrarEmpresaCertificaciones({
         const user = JSON.parse(userData);
         setUsuario(user);
       } catch (error) {
-        router.push(`/${tenantId}/login`);
+        navigate(`/${tenantId}/login`);
       }
     }
-  }, [tenantId, router]);
+  }, [tenantId, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -125,7 +125,7 @@ export default function RegistrarEmpresaCertificaciones({
 
     setTimeout(() => {
       setLoading(false);
-      router.push(`/${tenantId}/certificaciones/empresas`);
+      navigate(`/${tenantId}/certificaciones/empresas`);
     }, 1500);
   };
 
@@ -148,7 +148,7 @@ export default function RegistrarEmpresaCertificaciones({
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back button */}
         <button
-          onClick={() => router.push(`/${tenantId}/certificaciones`)}
+          onClick={() => navigate(`/${tenantId}/certificaciones`)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition-colors group"
         >
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
@@ -428,7 +428,7 @@ export default function RegistrarEmpresaCertificaciones({
           <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
             <button
               type="button"
-              onClick={() => router.push(`/${tenantId}/certificaciones`)}
+              onClick={() => navigate(`/${tenantId}/certificaciones`)}
               className="px-6 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors font-semibold"
             >
               Cancelar

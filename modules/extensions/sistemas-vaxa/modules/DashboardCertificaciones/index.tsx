@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
 import {
   Building2,
@@ -36,7 +36,7 @@ interface Usuario {
 }
 
 export default function DashboardCertificaciones({ tenantId, tenant }: DashboardCertificacionesProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
 
@@ -45,7 +45,7 @@ export default function DashboardCertificaciones({ tenantId, tenant }: Dashboard
     const userData = localStorage.getItem(`auth_user_${tenantId}`);
 
     if (!authData || authData !== 'true') {
-      router.push(`/${tenantId}/login`);
+      navigate(`/${tenantId}/login`);
       return;
     }
 
@@ -54,13 +54,13 @@ export default function DashboardCertificaciones({ tenantId, tenant }: Dashboard
         const user = JSON.parse(userData);
         setUsuario(user);
       } catch (error) {
-        router.push(`/${tenantId}/login`);
+        navigate(`/${tenantId}/login`);
         return;
       }
     }
 
     setLoading(false);
-  }, [tenantId, router]);
+  }, [tenantId, navigate]);
 
   if (loading || !usuario) {
     return null;
@@ -130,7 +130,7 @@ export default function DashboardCertificaciones({ tenantId, tenant }: Dashboard
             <p className="text-gray-600">Gestiona empresas, usuarios y certificados</p>
           </div>
           <button
-            onClick={() => router.push(`/${tenantId}/certificaciones/registrar-empresa`)}
+            onClick={() => navigate(`/${tenantId}/certificaciones/registrar-empresa`)}
             className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-lg hover:shadow-xl font-semibold"
           >
             <Plus className="w-5 h-5" />
@@ -159,7 +159,7 @@ export default function DashboardCertificaciones({ tenantId, tenant }: Dashboard
         {/* Acciones Rápidas */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <button
-            onClick={() => router.push(`/${tenantId}/certificaciones/empresas`)}
+            onClick={() => navigate(`/${tenantId}/certificaciones/empresas`)}
             className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-emerald-300 transition-all text-left group"
           >
             <div className="flex items-center justify-between mb-4">
@@ -173,7 +173,7 @@ export default function DashboardCertificaciones({ tenantId, tenant }: Dashboard
           </button>
 
           <button
-            onClick={() => router.push(`/${tenantId}/certificaciones/registrar-empresa`)}
+            onClick={() => navigate(`/${tenantId}/certificaciones/registrar-empresa`)}
             className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all text-left group"
           >
             <div className="flex items-center justify-between mb-4">
@@ -192,7 +192,7 @@ export default function DashboardCertificaciones({ tenantId, tenant }: Dashboard
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900">Empresas Recientes</h2>
             <button
-              onClick={() => router.push(`/${tenantId}/certificaciones/empresas`)}
+              onClick={() => navigate(`/${tenantId}/certificaciones/empresas`)}
               className="text-sm text-emerald-600 hover:text-emerald-700 font-semibold flex items-center gap-1"
             >
               Ver todas
@@ -204,7 +204,7 @@ export default function DashboardCertificaciones({ tenantId, tenant }: Dashboard
             {empresasRecientes.map((empresa) => (
               <div
                 key={empresa.id}
-                onClick={() => router.push(`/${tenantId}/certificaciones/empresa/${empresa.id}`)}
+                onClick={() => navigate(`/${tenantId}/certificaciones/empresa/${empresa.id}`)}
                 className="flex items-center justify-between p-4 rounded-xl border border-gray-200 hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-4">

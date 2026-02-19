@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { TenantConfig } from '@/lib/tenants';
-import Image from 'next/image';
 import {
   Search,
   CheckCircle,
@@ -141,12 +140,12 @@ export default function Validacion({ tenantId, tenant }: ValidacionProps) {
               {VAXA_CONFIG.LOGO && (
                 <div className="relative">
                   <div className="absolute inset-0 bg-orange-400/20 blur-xl rounded-full"></div>
-                  <Image
+                  <img
                     src={VAXA_CONFIG.LOGO}
                     alt={VAXA_CONFIG.NAME}
                     width={40}
                     height={40}
-                    className="rounded-lg relative z-10"
+                    className="rounded-lg relative z-10 w-10 h-10 object-cover"
                   />
                 </div>
               )}
@@ -310,12 +309,12 @@ export default function Validacion({ tenantId, tenant }: ValidacionProps) {
                     {certificado.empresa.logo && (
                       <div className="relative">
                         <div className="absolute inset-0 bg-orange-400/20 blur-lg rounded-xl"></div>
-                        <Image
+                        <img
                           src={certificado.empresa.logo}
                           alt={certificado.empresa.nombre}
                           width={56}
                           height={56}
-                          className="rounded-xl border border-slate-200 relative z-10"
+                          className="rounded-xl border border-slate-200 relative z-10 w-14 h-14 object-cover"
                         />
                       </div>
                     )}

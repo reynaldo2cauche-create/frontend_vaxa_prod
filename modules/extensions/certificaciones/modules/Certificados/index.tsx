@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
 import {
   Users,
@@ -100,7 +100,7 @@ const generarCertificadosEstaticos = (loteId: string): Participante[] => {
 };
 
 export default function CertificadosLote({ tenantId, tenant, loteId }: CertificadosProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [participantes, setParticipantes] = useState<Participante[]>([]);
   const [filteredParticipantes, setFilteredParticipantes] = useState<Participante[]>([]);
@@ -123,7 +123,7 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
     const userData = localStorage.getItem(`auth_user_${tenantId}`);
 
     if (!authData || authData !== 'true') {
-      router.push(`/${tenantId}/login`);
+      navigate(`/${tenantId}/login`);
       return;
     }
 
@@ -133,7 +133,7 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
         setUsuario(user);
       } catch (error) {
         console.error('Error al parsear usuario:', error);
-        router.push(`/${tenantId}/login`);
+        navigate(`/${tenantId}/login`);
         return;
       }
     }
@@ -142,7 +142,7 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
     const certs = generarCertificadosEstaticos(loteId);
     setParticipantes(certs);
     setLoading(false);
-  }, [tenantId, loteId, router]);
+  }, [tenantId, loteId, navigate]);
 
   useEffect(() => {
     filterAndSortParticipantes();
@@ -295,7 +295,7 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => router.push(`/${tenantId}/historial`)}
+            onClick={() => navigate(`/${tenantId}/historial`)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />

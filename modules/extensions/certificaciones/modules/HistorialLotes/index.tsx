@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
 import {
   FileText,
@@ -75,7 +75,7 @@ const LOTES_ESTATICOS: Lote[] = [
 ];
 
 export default function HistorialLotes({ tenantId, tenant }: HistorialLotesProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [lotes, setLotes] = useState<Lote[]>([]);
@@ -89,7 +89,7 @@ export default function HistorialLotes({ tenantId, tenant }: HistorialLotesProps
     const userData = localStorage.getItem(`auth_user_${tenantId}`);
 
     if (!authData || authData !== 'true') {
-      router.push(`/${tenantId}/login`);
+      navigate(`/${tenantId}/login`);
       return;
     }
 
@@ -99,7 +99,7 @@ export default function HistorialLotes({ tenantId, tenant }: HistorialLotesProps
         setUsuario(user);
       } catch (error) {
         console.error('Error al parsear usuario:', error);
-        router.push(`/${tenantId}/login`);
+        navigate(`/${tenantId}/login`);
         return;
       }
     }
@@ -107,7 +107,7 @@ export default function HistorialLotes({ tenantId, tenant }: HistorialLotesProps
     // Cargar lotes estáticos
     setLotes(LOTES_ESTATICOS);
     setLoading(false);
-  }, [tenantId, router]);
+  }, [tenantId, navigate]);
 
   const descargarZip = async (loteId: number) => {
     try {
@@ -124,7 +124,7 @@ export default function HistorialLotes({ tenantId, tenant }: HistorialLotesProps
   };
 
   const verCertificados = (loteId: number) => {
-    router.push(`/${tenantId}/historial/${loteId}/certificados`);
+    navigate(`/${tenantId}/historial/${loteId}/certificados`);
   };
 
   const formatearFecha = (fecha: string) => {
@@ -171,7 +171,7 @@ export default function HistorialLotes({ tenantId, tenant }: HistorialLotesProps
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => router.push(`/${tenantId}`)}
+            onClick={() => navigate(`/${tenantId}`)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -219,7 +219,7 @@ export default function HistorialLotes({ tenantId, tenant }: HistorialLotesProps
               Comienza generando tu primer lote de certificados desde el dashboard principal
             </p>
             <button
-              onClick={() => router.push(`/${tenantId}`)}
+              onClick={() => navigate(`/${tenantId}`)}
               className="inline-flex items-center gap-2 px-6 py-2.5 text-white rounded-lg hover:opacity-90 transition-all text-sm font-medium"
               style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}
             >

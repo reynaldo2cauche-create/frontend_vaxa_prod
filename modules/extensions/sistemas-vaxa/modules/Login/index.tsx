@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
 import { Mail, Lock, LogIn, AlertCircle } from '@/components/ui/icon';
 
@@ -11,7 +11,7 @@ interface LoginProps {
 }
 
 export default function LoginSistemasVaxa({ tenantId, tenant }: LoginProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -35,7 +35,7 @@ export default function LoginSistemasVaxa({ tenantId, tenant }: LoginProps) {
             role: 'superadmin',
           })
         );
-        router.push(`/${tenantId}/sistemas`);
+        navigate(`/${tenantId}/sistemas`);
       } else {
         setError('Email o contraseña incorrectos');
         setLoading(false);

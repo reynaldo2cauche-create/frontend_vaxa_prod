@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
 import {
   Search,
@@ -112,7 +112,7 @@ const PARTICIPANTES_ESTATICOS: Participante[] = [
 ];
 
 export default function Participantes({ tenantId, tenant }: ParticipantesProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
   const [buscando, setBuscando] = useState(false);
@@ -145,7 +145,7 @@ export default function Participantes({ tenantId, tenant }: ParticipantesProps) 
     const userData = localStorage.getItem(`auth_user_${tenantId}`);
 
     if (!authData || authData !== 'true') {
-      router.push(`/${tenantId}/login`);
+      navigate(`/${tenantId}/login`);
       return;
     }
 
@@ -155,13 +155,13 @@ export default function Participantes({ tenantId, tenant }: ParticipantesProps) 
         setUsuario(user);
       } catch (error) {
         console.error('Error al parsear usuario:', error);
-        router.push(`/${tenantId}/login`);
+        navigate(`/${tenantId}/login`);
         return;
       }
     }
 
     setLoading(false);
-  }, [tenantId, router]);
+  }, [tenantId, navigate]);
 
   const buscarParticipante = async () => {
     if (!terminoBusqueda.trim()) {
@@ -338,7 +338,7 @@ export default function Participantes({ tenantId, tenant }: ParticipantesProps) 
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => router.push(`/${tenantId}`)}
+            onClick={() => navigate(`/${tenantId}`)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />

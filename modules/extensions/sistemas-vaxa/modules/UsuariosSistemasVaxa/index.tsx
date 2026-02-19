@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
 import {
   ArrowLeft,
@@ -52,7 +52,7 @@ const USUARIOS_VAXA_MOCK: UsuarioVaxa[] = [
 ];
 
 export default function UsuariosSistemasVaxa({ tenantId, tenant }: UsuariosSistemasVaxaProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [usuarios, setUsuarios] = useState<UsuarioVaxa[]>(USUARIOS_VAXA_MOCK);
@@ -70,7 +70,7 @@ export default function UsuariosSistemasVaxa({ tenantId, tenant }: UsuariosSiste
     const userData = localStorage.getItem(`auth_user_${tenantId}`);
 
     if (!authData || authData !== 'true') {
-      router.push(`/${tenantId}/login`);
+      navigate(`/${tenantId}/login`);
       return;
     }
 
@@ -79,13 +79,13 @@ export default function UsuariosSistemasVaxa({ tenantId, tenant }: UsuariosSiste
         const user = JSON.parse(userData);
         setUsuario(user);
       } catch (error) {
-        router.push(`/${tenantId}/login`);
+        navigate(`/${tenantId}/login`);
         return;
       }
     }
 
     setLoading(false);
-  }, [tenantId, router]);
+  }, [tenantId, navigate]);
 
   if (loading || !usuario) {
     return null;
@@ -121,7 +121,7 @@ export default function UsuariosSistemasVaxa({ tenantId, tenant }: UsuariosSiste
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back button */}
         <button
-          onClick={() => router.push(`/${tenantId}/sistemas`)}
+          onClick={() => navigate(`/${tenantId}/sistemas`)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition-colors group"
         >
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
 import {
   Package,
@@ -26,7 +26,7 @@ interface Usuario {
 }
 
 export default function Sistemas({ tenantId, tenant }: SistemasProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
 
@@ -41,7 +41,7 @@ export default function Sistemas({ tenantId, tenant }: SistemasProps) {
     const userData = localStorage.getItem(`auth_user_${tenantId}`);
 
     if (!authData || authData !== 'true') {
-      router.push(`/${tenantId}/login`);
+      navigate(`/${tenantId}/login`);
       return;
     }
 
@@ -50,13 +50,13 @@ export default function Sistemas({ tenantId, tenant }: SistemasProps) {
         const user = JSON.parse(userData);
         setUsuario(user);
       } catch (error) {
-        router.push(`/${tenantId}/login`);
+        navigate(`/${tenantId}/login`);
         return;
       }
     }
 
     setLoading(false);
-  }, [tenantId, router]);
+  }, [tenantId, navigate]);
 
   if (loading || !usuario) {
     return null;
@@ -112,7 +112,7 @@ export default function Sistemas({ tenantId, tenant }: SistemasProps) {
               {SISTEMAS_MOCK.map((sistema) => (
                 <button
                   key={sistema.id}
-                  onClick={() => router.push(`/${tenantId}/${sistema.slug}`)}
+                  onClick={() => navigate(`/${tenantId}/${sistema.slug}`)}
                   className="w-full flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-emerald-300 hover:shadow-md transition-all group"
                 >
                   <div className="flex items-center gap-3">
@@ -147,7 +147,7 @@ export default function Sistemas({ tenantId, tenant }: SistemasProps) {
             </div>
 
             <button
-              onClick={() => router.push(`/${tenantId}/usuarios`)}
+              onClick={() => navigate(`/${tenantId}/usuarios`)}
               className="w-full flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all group"
             >
               <div className="flex items-center gap-3">

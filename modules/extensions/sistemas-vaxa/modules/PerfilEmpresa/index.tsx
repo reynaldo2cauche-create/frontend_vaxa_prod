@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
 import {
   ArrowLeft,
@@ -46,7 +46,7 @@ interface Usuario {
 type TabType = 'informacion' | 'plan' | 'usuarios' | 'logos';
 
 export default function PerfilEmpresa({ tenantId, tenant, empresaId }: PerfilEmpresaProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('informacion');
@@ -56,7 +56,7 @@ export default function PerfilEmpresa({ tenantId, tenant, empresaId }: PerfilEmp
     const userData = localStorage.getItem(`auth_user_${tenantId}`);
 
     if (!authData || authData !== 'true') {
-      router.push(`/${tenantId}/login`);
+      navigate(`/${tenantId}/login`);
       return;
     }
 
@@ -65,13 +65,13 @@ export default function PerfilEmpresa({ tenantId, tenant, empresaId }: PerfilEmp
         const user = JSON.parse(userData);
         setUsuario(user);
       } catch (error) {
-        router.push(`/${tenantId}/login`);
+        navigate(`/${tenantId}/login`);
         return;
       }
     }
 
     setLoading(false);
-  }, [tenantId, router]);
+  }, [tenantId, navigate]);
 
   if (loading || !usuario) {
     return null;
@@ -87,7 +87,7 @@ export default function PerfilEmpresa({ tenantId, tenant, empresaId }: PerfilEmp
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Empresa no encontrada</h2>
           <p className="text-gray-600 mb-6">La empresa que buscas no existe</p>
           <button
-            onClick={() => router.push(`/${tenantId}/certificaciones/empresas`)}
+            onClick={() => navigate(`/${tenantId}/certificaciones/empresas`)}
             className="px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold shadow-sm"
           >
             Volver a Empresas
@@ -119,7 +119,7 @@ export default function PerfilEmpresa({ tenantId, tenant, empresaId }: PerfilEmp
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back button */}
         <button
-          onClick={() => router.push(`/${tenantId}/certificaciones/empresas`)}
+          onClick={() => navigate(`/${tenantId}/certificaciones/empresas`)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition-colors group"
         >
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />

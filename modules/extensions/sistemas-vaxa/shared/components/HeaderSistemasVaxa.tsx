@@ -1,7 +1,4 @@
-'use client';
-
-import { useRouter, usePathname } from 'next/navigation';
-import Image from 'next/image';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LogOut, Building2, Package, Users, Menu, X, Settings } from 'lucide-react';
 import { useState } from 'react';
 
@@ -21,8 +18,8 @@ interface HeaderSistemasVaxaProps {
 }
 
 export default function HeaderSistemasVaxa({ tenantId, usuario, config }: HeaderSistemasVaxaProps) {
-  const router = useRouter();
-  const pathname = usePathname();
+  const navigate = useNavigate();
+  const pathname = useLocation().pathname;
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
@@ -36,11 +33,11 @@ export default function HeaderSistemasVaxa({ tenantId, usuario, config }: Header
   const handleLogout = () => {
     localStorage.removeItem(`auth_${tenantId}`);
     localStorage.removeItem(`auth_user_${tenantId}`);
-    router.push(`/${tenantId}/login`);
+    navigate(`/${tenantId}/login`);
   };
 
   const handleNavigation = (path: string) => {
-    router.push(`/${tenantId}${path}`);
+    navigate(`/${tenantId}${path}`);
     setShowUserMenu(false);
     setShowMobileMenu(false);
   };
@@ -57,12 +54,12 @@ export default function HeaderSistemasVaxa({ tenantId, usuario, config }: Header
             {/* Logo y nombre */}
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => handleNavigation('/sistemas')}>
               {tenantConfig.logo ? (
-                <Image
+                <img
                   src={tenantConfig.logo}
                   alt={tenantConfig.name}
                   width={32}
                   height={32}
-                  className="rounded-lg object-cover"
+                  className="rounded-lg object-cover w-8 h-8"
                 />
               ) : (
                 <div

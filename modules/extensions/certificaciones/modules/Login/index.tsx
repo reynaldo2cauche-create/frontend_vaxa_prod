@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
-import Image from 'next/image';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2, Shield, ArrowRight } from '@/components/ui/icon';
 import { TENANT_CONFIG } from '../../shared/constants';
 
@@ -18,7 +17,7 @@ export default function CertificacionesLogin({ tenantId, tenant }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,8 +65,7 @@ export default function CertificacionesLogin({ tenantId, tenant }: LoginProps) {
         role: usuario.role
       }));
 
-      router.push(`/${tenantId}/dashboard`);
-      router.refresh();
+      navigate(`/${tenantId}/dashboard`);
     } catch (err) {
       console.error('Error en login:', err);
       setError('Error de conexión. Por favor, intente nuevamente.');
@@ -114,12 +112,12 @@ export default function CertificacionesLogin({ tenantId, tenant }: LoginProps) {
                   {TENANT_CONFIG.LOGO ? (
                     <div className="relative group">
                       <div className="absolute -inset-4 bg-white/5 rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                      <Image
+                      <img
                         src={TENANT_CONFIG.LOGO}
                         alt={TENANT_CONFIG.NAME}
                         width={160}
                         height={160}
-                        className="relative rounded-[2rem] object-cover"
+                        className="relative rounded-[2rem] object-cover w-40 h-40"
                       />
                     </div>
                   ) : (
@@ -174,12 +172,12 @@ export default function CertificacionesLogin({ tenantId, tenant }: LoginProps) {
               <div className="lg:hidden text-center mb-8">
                 <div className="flex justify-center mb-3">
                   {TENANT_CONFIG.LOGO ? (
-                    <Image
+                    <img
                       src={TENANT_CONFIG.LOGO}
                       alt={TENANT_CONFIG.NAME}
                       width={56}
                       height={56}
-                      className="rounded-2xl object-cover shadow-lg"
+                      className="rounded-2xl object-cover shadow-lg w-14 h-14"
                     />
                   ) : (
                     <div

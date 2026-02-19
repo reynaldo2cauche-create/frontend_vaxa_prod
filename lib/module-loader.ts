@@ -1,6 +1,14 @@
-// Sistema de carga dinámica de módulos
+// Sistema de carga dinámica de módulos (compatible con Vite)
 
 import { getTenantConfig } from './tenants';
+
+// Vite: glob para que el bundler incluya todos los módulos de extensions
+const extensionModules = import.meta.glob<{ default: React.ComponentType<any> }>(
+  '../modules/extensions/*/modules/*/index.tsx'
+);
+const coreModules = import.meta.glob<{ default: React.ComponentType<any> }>(
+  '../modules/core/*/index.tsx'
+);
 
 interface ModuleProps {
   tenantId: string;
@@ -8,24 +16,29 @@ interface ModuleProps {
   [key: string]: any;
 }
 
-/**
- * Carga un módulo para un tenant específico
- * 1. Intenta cargar módulo custom del tenant
- * 2. Si no existe, carga el módulo core
- */
+function findExtensionModule(tenantId: string, moduleName: string): (() => Promise<{ default: React.ComponentType<any> }>) | null {
+  const key = Object.keys(extensionModules).find(
+    (k) => k.includes(`/${tenantId}/`) && k.includes(`/${moduleName}/index.tsx`)
+  );
+  return key ? extensionModules[key] : null;
+}
+
+function findCoreModule(moduleName: string): (() => Promise<{ default: React.ComponentType<any> }>) | null {
+  const key = Object.keys(coreModules).find((k) => k.includes(`/${moduleName}/index.tsx`));
+  return key ? coreModules[key] : null;
+}
+
 export async function loadModule(
   moduleName: string,
   tenantId: string,
-  props?: ModuleProps
-) {
+  _props?: ModuleProps
+): Promise<React.ComponentType<any>> {
   const tenant = getTenantConfig(tenantId);
 
   if (!tenant) {
     throw new Error(`Tenant ${tenantId} no encontrado`);
   }
 
-  // Verificar si el módulo está habilitado (solo si está en la lista de modules)
-  // Login es especial y no está en modules, se maneja con hasLogin
   if (moduleName !== 'Login') {
     const moduleKey = moduleName.toLowerCase() as keyof typeof tenant.modules;
     if (moduleKey in tenant.modules && tenant.modules[moduleKey] === false) {
@@ -33,48 +46,28 @@ export async function loadModule(
     }
   }
 
-  // Intentar cargar módulo custom primero
   const hasCustomModule = tenant.customModules?.includes(moduleName);
 
   if (hasCustomModule) {
-    // Intentar primero en la nueva estructura: modules/ModuleName
-    try {
-      const CustomModule = await import(
-        `@/modules/extensions/${tenantId}/modules/${moduleName}`
-      );
-      return CustomModule.default;
-    } catch (error) {
-      // Si no existe en modules/, intentar en la raíz (estructura antigua)
-      try {
-        const CustomModule = await import(
-          `@/modules/extensions/${tenantId}/${moduleName}`
-        );
-        return CustomModule.default;
-      } catch (error2) {
-        console.warn(
-          `Módulo custom ${moduleName} no encontrado para ${tenantId}, usando core`
-        );
-      }
+    const loader = findExtensionModule(tenantId, moduleName);
+    if (loader) {
+      const mod = await loader();
+      return mod.default;
     }
   }
 
-  // Cargar módulo core (fallback)
-  try {
-    const CoreModule = await import(`@/modules/core/${moduleName}`);
-    return CoreModule.default;
-  } catch (error) {
-    throw new Error(`Módulo ${moduleName} no encontrado en core`);
+  const coreLoader = findCoreModule(moduleName);
+  if (coreLoader) {
+    const mod = await coreLoader();
+    return mod.default;
   }
+
+  throw new Error(`Módulo ${moduleName} no encontrado`);
 }
 
-/**
- * Verifica si un módulo está habilitado para un tenant
- */
 export function isModuleEnabled(moduleName: string, tenantId: string): boolean {
   const tenant = getTenantConfig(tenantId);
   if (!tenant) return false;
-
   const moduleKey = moduleName.toLowerCase() as keyof typeof tenant.modules;
   return tenant.modules[moduleKey] === true;
 }
-

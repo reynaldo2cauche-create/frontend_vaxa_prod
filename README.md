@@ -1,271 +1,164 @@
-# Sistema Multi-Tenant para Centros de Terapia
+# Sistema Multi-Tenant Vaxa
 
-Sistema web desarrollado con Next.js 16, TypeScript y Tailwind CSS, diseñado con arquitectura multi-tenant modular para gestionar múltiples centros de terapia en una sola aplicación.
+Sistema web desarrollado con **Vite**, **React**, **React Router** y **Tailwind CSS**, con arquitectura multi-tenant modular. Pensado para desplegar como SPA estática (por ejemplo en cPanel) y soportar rutas dinámicas sin límite de IDs.
 
 ## 🏗️ Arquitectura
 
 ### Multi-Tenant Modular
 
-El sistema utiliza una arquitectura modular que permite:
-- **Módulos core compartidos**: Componentes base reutilizables
-- **Módulos custom por tenant**: Cada empresa puede tener módulos personalizados
-- **Un solo backend**: Todas las empresas usan el mismo backend NestJS
-- **Aislamiento de datos**: El backend filtra automáticamente por `tenant-id`
+- **Módulos core** (`modules/core/`): Componentes base compartidos.
+- **Módulos por tenant** (`modules/extensions/{tenantId}/`): Cada tenant tiene sus propios módulos (Login, Dashboard, etc.).
+- **Un solo build**: Una SPA; todas las rutas se resuelven en el cliente (ideal para hosting estático).
+- **Config de tenants**: `lib/tenants.ts` define tenants y módulos habilitados.
 
 ### Estructura del Proyecto
 
 ```
 /
-├── app/                      # Rutas de Next.js (App Router)
-│   ├── [tenant]/             # Rutas dinámicas por tenant
-│   │   ├── layout.tsx        # Layout específico por tenant
-│   │   ├── page.tsx           # Página principal
-│   │   ├── dashboard/         # Dashboard del tenant
-│   │   ├── pacientes/         # Gestión de pacientes
-│   │   ├── citas/             # Gestión de citas
-│   │   └── terapeutas/        # Gestión de terapeutas
-│   └── page.tsx               # Página principal (selector de tenants)
+├── src/                       # Aplicación Vite + React Router
+│   ├── main.tsx               # Entrada
+│   ├── App.tsx                # Rutas (/:tenantId/...)
+│   ├── index.css              # Estilos globales (Tailwind)
+│   ├── pages/                 # Páginas de rutas
+│   │   ├── HomePage.tsx       # Selector de tenants (/)
+│   │   └── TenantRedirect.tsx # Redirección por tenant
+│   ├── layouts/
+│   │   └── TenantLayout.tsx   # Layout por tenant
+│   └── components/
+│       ├── LazyRoute.tsx      # Carga módulos por ruta
+│       └── AuthGuard.tsx      # Protección por sesión
 │
-├── modules/                   # Sistema de módulos
-│   ├── core/                  # Módulos base compartidos
-│   │   ├── Dashboard/
-│   │   ├── Pacientes/
-│   │   ├── Citas/
-│   │   ├── Terapeutas/
-│   │   └── Home/
-│   └── extensions/            # Módulos custom por tenant
-│       └── empresa-demo/
-│           ├── Dashboard/    # Dashboard custom
-│           └── Home/          # Home custom
+├── modules/
+│   ├── core/                  # Módulos base (Home, Pacientes, etc.)
+│   └── extensions/            # Módulos por tenant
+│       ├── certificaciones/   # Tenant Certificaciones
+│       │   └── modules/      # Login, Dashboard, HistorialLotes, Certificados, etc.
+│       └── sistemas-vaxa/    # Tenant Sistemas Vaxa
+│           └── modules/       # Login, Sistemas, Usuarios, DashboardCertificaciones, etc.
 │
-├── components/                # Componentes reutilizables
-│   ├── ui/                    # Componentes UI base
-│   │   ├── Button.tsx
-│   │   ├── Input.tsx
-│   │   ├── Select.tsx
-│   │   └── Card.tsx
-│   └── shared/               # Componentes compartidos
-│       └── DataTable.tsx
+├── components/                # Componentes compartidos
+│   ├── ui/                    # Button, Input, Select, Card, iconos
+│   └── shared/                # Header, PageTransition, DataTable
 │
-├── lib/                       # Utilidades y configuración
-│   ├── tenants.ts            # Configuración de tenants
-│   ├── module-loader.ts      # Sistema de carga de módulos
-│   └── api/                  # Cliente API
-│       ├── client.ts          # Cliente HTTP base
-│       └── services/          # Servicios por entidad
-│           ├── pacientes.ts
-│           ├── citas.ts
-│           └── terapeutas.ts
+├── lib/
+│   ├── tenants.ts             # Configuración de tenants
+│   ├── module-loader.ts       # Carga dinámica de módulos (Vite glob)
+│   └── api/                   # Cliente API (opcional)
 │
-└── hooks/                     # Custom hooks
-    └── usePacientes.ts
+├── public/                    # Assets estáticos
+│   └── .htaccess              # SPA fallback para Apache/cPanel
+│
+├── index.html                 # Entrada HTML (Vite)
+├── vite.config.ts             # Configuración Vite
+└── package.json
 ```
 
-## 🚀 Getting Started
+## 🚀 Inicio rápido
 
-### Prerrequisitos
+### Requisitos
 
-- Node.js 18+ 
-- npm, yarn, pnpm o bun
+- Node.js 18+
+- npm (o yarn/pnpm)
 
 ### Instalación
 
-1. Clonar el repositorio
+1. Clonar el repositorio:
 ```bash
 git clone <repo-url>
-cd vaxa_web_new
+cd frontend_vaxa_prod
 ```
 
-2. Instalar dependencias
+2. Instalar dependencias:
 ```bash
 npm install
 ```
 
-3. Configurar variables de entorno
-```bash
-# Crear archivo .env.local
-NEXT_PUBLIC_API_URL=http://localhost:3001
+3. (Opcional) Variables de entorno  
+   Si usas API, crea `.env` con algo como:
+```env
+VITE_API_URL=http://localhost:3001
 ```
 
-4. Ejecutar servidor de desarrollo
+4. Servidor de desarrollo:
 ```bash
 npm run dev
 ```
 
-5. Abrir en el navegador
+5. Abrir en el navegador:
 ```
-http://localhost:3000
+http://localhost:5173
 ```
+
+### Build y despliegue (cPanel / estático)
+
+```bash
+npm run build
+```
+
+Se genera la carpeta **`dist/`**. Sube todo su contenido al hosting (incluido el `.htaccess` que se copia desde `public/`). El `.htaccess` está configurado para que todas las rutas sirvan `index.html` (SPA).
 
 ## 📖 Uso
 
-### Acceder a un Tenant
+### Acceder a un tenant
 
-1. **Página principal**: Selecciona un tenant desde la lista
-2. **URL directa**: `http://localhost:3000/empresa-demo`
-3. **Navegación**: Cada tenant tiene su propia navegación
+- **Página principal**: En la raíz (`/`) se listan los tenants; al hacer clic entras a ese tenant.
+- **URL directa**:
+  - Certificaciones: `http://localhost:5173/certificaciones` → redirige a login.
+  - Sistemas Vaxa: `http://localhost:5173/sistemas-vaxa` → redirige a sistemas.
 
-### Tenants Disponibles
+### Tenants disponibles
 
-- `empresa-demo`: Centro de Terapia Demo (tiene módulos custom)
-- `centro-abc`: Centro ABC (usa módulos core)
+- **certificaciones**: Sistema de gestión de certificados (login, dashboard, historial, participantes, validación).
+- **sistemas-vaxa**: Panel de administración (login, sistemas, usuarios, empresas, certificaciones).
 
-### Agregar un Nuevo Tenant
+### Añadir un nuevo tenant
 
-1. Editar `lib/tenants.ts`:
-```typescript
-' nuevo-tenant': {
-  id: 'nuevo-tenant',
-  name: 'Nuevo Centro',
-  primaryColor: 'purple',
-  modules: {
-    dashboard: true,
-    pacientes: true,
-    citas: true,
-    terapeutas: true,
-  },
-  customModules: [], // O ['Dashboard'] si tiene custom
-}
-```
-
-2. Acceder a: `http://localhost:3000/nuevo-tenant`
+1. En `lib/tenants.ts` agrega la configuración del tenant (id, name, modules, customModules, etc.).
+2. Crea la carpeta `modules/extensions/{tenant-id}/modules/` y los módulos que necesites.
+3. Las rutas `/:tenantId/...` funcionan automáticamente; no hace falta tocar `src/App.tsx` salvo que quieras rutas nuevas para ese tenant.
 
 ## 🔧 Desarrollo
 
-### Crear un Módulo Core
+### Crear un módulo para un tenant
 
-```typescript
-// modules/core/NuevoModulo/index.tsx
-import { TenantConfig } from '@/lib/tenants';
+1. Crear carpeta: `modules/extensions/{tenant-id}/modules/NombreModulo/`
+2. Crear `index.tsx` que exporte por defecto un componente con props `tenantId` y `tenant`.
+3. En `lib/tenants.ts`, añadir el nombre del módulo en `customModules` del tenant.
+4. En `src/App.tsx`, añadir la ruta que use `<LazyRoute module="NombreModulo" />` (o con `paramKey` si lleva parámetro en la URL).
 
-interface NuevoModuloProps {
-  tenantId: string;
-  tenant: TenantConfig;
-}
+### Rutas dinámicas
 
-export default function NuevoModulo({ tenantId, tenant }: NuevoModuloProps) {
-  return <div>Contenido del módulo</div>;
-}
-```
+Las rutas con parámetros (por ejemplo `/:tenantId/historial/:loteId/certificados`) funcionan para **cualquier** valor de `loteId` sin pregenerar páginas; el cliente lee el parámetro y llama al backend si hace falta.
 
-### Crear un Módulo Custom
+## 🎨 Stack
 
-1. Crear carpeta: `modules/extensions/[tenant-id]/[ModuleName]/`
-2. Crear `index.tsx` con el componente
-3. Agregar a `customModules` en `lib/tenants.ts`:
-```typescript
-customModules: ['ModuleName']
-```
-
-### Usar Componentes UI
-
-```typescript
-import { Button, Input, Select, Card } from '@/components/ui';
-
-<Button variant="primary" size="md">Click me</Button>
-<Input label="Nombre" placeholder="Ingresa nombre" />
-<Select label="País">
-  <option>Perú</option>
-</Select>
-<Card title="Título">Contenido</Card>
-```
-
-### Hacer Llamadas API
-
-```typescript
-import { pacientesService } from '@/lib/api';
-
-// En Server Components
-const pacientes = await pacientesService.getAll(tenantId, token);
-
-// En Client Components
-const { pacientes, loading, error } = usePacientes({
-  tenantId,
-  token,
-});
-```
-
-## 🔌 Integración con Backend
-
-### Configuración
-
-El sistema envía automáticamente el header `x-tenant-id` en todas las peticiones. El backend NestJS debe:
-
-1. **Leer el header** `x-tenant-id` en cada request
-2. **Filtrar queries** por `tenant_id`
-3. **Validar** que los recursos pertenezcan al tenant
-4. **Asignar** `tenant_id` automáticamente al crear
-
-### Ejemplo en NestJS
-
-```typescript
-// Interceptor que lee x-tenant-id
-@Injectable()
-export class TenantInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler) {
-    const request = context.switchToHttp().getRequest();
-    const tenantId = request.headers['x-tenant-id'];
-    
-    // Filtrar por tenantId en todas las queries
-    // ...
-  }
-}
-```
-
-## 📁 Estructura Detallada
-
-### `/app/[tenant]`
-Rutas dinámicas de Next.js. Cada tenant tiene sus propias páginas que cargan módulos dinámicamente.
-
-### `/modules/core`
-Módulos base compartidos por todos los tenants. Si un tenant no tiene módulo custom, usa el core.
-
-### `/modules/extensions`
-Módulos personalizados por tenant. Sobrescriben los módulos core cuando están configurados.
-
-### `/components/ui`
-Componentes UI base reutilizables (Button, Input, Select, Card, etc.)
-
-### `/lib/api`
-Cliente HTTP y servicios para llamadas al backend. Incluye automáticamente `x-tenant-id` en todas las peticiones.
-
-## 🎨 Tecnologías
-
-- **Next.js 16**: Framework React con App Router
+- **Vite**: Build y dev server
+- **React 18**: UI
+- **React Router 6**: Rutas (incl. dinámicas por tenant)
 - **TypeScript**: Tipado estático
-- **Tailwind CSS**: Estilos utility-first
-- **NextAuth.js**: Autenticación (configurar cuando sea necesario)
+- **Tailwind CSS**: Estilos
 
 ## 📝 Scripts
 
 ```bash
-npm run dev      # Servidor de desarrollo
-npm run build    # Build de producción
-npm run start    # Servidor de producción
+npm run dev      # Servidor de desarrollo (puerto 5173)
+npm run build    # Build de producción → carpeta dist/
+npm run preview  # Previsualizar el build localmente
 npm run lint     # Linter
 ```
 
-## 🔐 Variables de Entorno
+## 🔐 Variables de entorno
+
+Con Vite se usan variables con prefijo `VITE_`:
 
 ```env
-# URL del backend NestJS
-NEXT_PUBLIC_API_URL=http://localhost:3001
-
-# NextAuth (cuando lo configures)
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=tu-secret-key
+VITE_API_URL=http://localhost:3001
 ```
 
-## 📚 Documentación Adicional
+## 📚 Más
 
-- [API Client](./lib/api/README.md) - Documentación del cliente API
-- [Componentes UI](./components/ui/README.md) - Documentación de componentes
-
-## 🤝 Contribuir
-
-1. Crear una rama para la feature
-2. Hacer los cambios
-3. Crear un Pull Request
+- [Cliente API](./lib/api/README.md) – si aplica
+- [Componentes UI](./components/ui/README.md) – si aplica
 
 ## 📄 Licencia
 
@@ -273,4 +166,4 @@ NEXTAUTH_SECRET=tu-secret-key
 
 ---
 
-**Desarrollado con ❤️ para gestión de centros de terapia**
+**Sistema Vaxa – Multi-tenant con Vite + React**

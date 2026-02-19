@@ -56,7 +56,15 @@ const tenants: Record<string, TenantConfig> = {
       
 
     },
-    customModules:[ 'Login', 'Sistemas', 'Usuarios',],
+    customModules: [
+      'Login',
+      'Sistemas',
+      'UsuariosSistemasVaxa',
+      'DashboardCertificaciones',
+      'EmpresasCertificaciones',
+      'RegistrarEmpresaCertificaciones',
+      'PerfilEmpresa',
+    ],
   }
 };
 

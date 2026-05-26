@@ -1,12 +1,8 @@
-
-
 export interface TenantConfig {
   id: string;
   name: string;
   primaryColor: string;
   logo?: string;
-
-  // Módulos habilitados para este tenant
   modules: {
     dashboard: boolean;
     pacientes: boolean;
@@ -15,17 +11,14 @@ export interface TenantConfig {
     facturacion?: boolean;
     participantes?: boolean;
   };
-
-  // Indica si este tenant utiliza inicio de sesión
   hasLogin?: boolean;
-
-  // Módulos custom que sobrescriben los core
   customModules?: string[];
+  /** Habilita el módulo SaaS de certificados en /:id/certificados/ */
+  hasCertificados?: boolean;
 }
 
-// Base de datos simulada de tenants (luego vendrá del backend)
 const tenants: Record<string, TenantConfig> = {
-   'certificaciones': {
+  'certificaciones': {
     id: 'certificaciones',
     name: 'Certificaciones',
     primaryColor: 'purple',
@@ -36,11 +29,12 @@ const tenants: Record<string, TenantConfig> = {
       citas: false,
       terapeutas: false,
       facturacion: false,
-      participantes: true, // Habilitar participantes
+      participantes: true,
     },
     customModules: ['Dashboard', 'Login', 'Participantes', 'HistorialLotes', 'Certificados', 'Validacion'],
   },
-  'sistemas-vaxa':{
+
+  'sistemas-vaxa': {
     id: 'sistemas-vaxa',
     name: 'Sistemas Vaxa',
     primaryColor: 'indigo',
@@ -51,10 +45,7 @@ const tenants: Record<string, TenantConfig> = {
       citas: false,
       terapeutas: false,
       facturacion: false,
-      participantes: true ,
-      
-      
-
+      participantes: true,
     },
     customModules: [
       'Login',
@@ -65,27 +56,35 @@ const tenants: Record<string, TenantConfig> = {
       'RegistrarEmpresaCertificaciones',
       'PerfilEmpresa',
     ],
-  }
+  },
+
+  // ── Empresas cliente del SaaS de certificados ──────────────────────────────
+  // Para onboardear un cliente nuevo: agrega su tenant_slug aquí con hasCertificados: true
+  // URL pública:  /:id/certificados/
+  // URL admin:    /:id/certificados/admin/
+  'vaxa': {
+    id: 'vaxa',
+    name: 'VAXA SISTEMAS',
+    primaryColor: '#4f46e5',
+    hasLogin: false,
+    hasCertificados: true,
+    modules: {
+      dashboard: false,
+      pacientes: false,
+      citas: false,
+      terapeutas: false,
+    },
+  },
 };
 
-/**
- * Obtiene la configuración de un tenant por su ID
- */
 export function getTenantConfig(tenantId: string): TenantConfig | null {
-  return tenants[tenantId] || null;
+  return tenants[tenantId] ?? null;
 }
 
-/**
- * Valida si un tenant existe
- */
 export function tenantExists(tenantId: string): boolean {
   return tenantId in tenants;
 }
 
-/**
- * Obtiene todos los tenants disponibles (para desarrollo)
- */
 export function getAllTenants(): TenantConfig[] {
   return Object.values(tenants);
 }
-

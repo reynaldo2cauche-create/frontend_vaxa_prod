@@ -19,8 +19,10 @@ import {
 } from '@/components/ui/icon';
 import {
   getCertificadoByCodigo,
-  type Certificado,
 } from '../../shared/data/mockData';
+
+// Tipo local para este módulo legacy
+type Certificado = ReturnType<typeof getCertificadoByCodigo>;
 import PageTransition from '@/components/shared/PageTransition';
 
 const VAXA_CONFIG = {

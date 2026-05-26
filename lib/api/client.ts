@@ -1,7 +1,7 @@
 // Cliente HTTP base para llamadas a la API
 // Todas las llamadas van al mismo backend, pero incluyen tenant-id
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:4000';
 
 interface RequestOptions extends RequestInit {
   tenantId?: string; // REQUERIDO: El backend necesita saber de qué tenant es la petición

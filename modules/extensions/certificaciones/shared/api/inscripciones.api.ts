@@ -8,8 +8,10 @@ const opts = (empresa: string) => ({
 });
 
 export const inscripcionesApi = {
-  list: (empresa: string) =>
-    api.get<Inscripcion[]>('/api/certificados/inscripciones', opts(empresa)),
+  list: (empresa: string, grupoId?: number) => {
+    const qs = grupoId ? `?grupo_id=${grupoId}` : '';
+    return api.get<Inscripcion[]>(`/api/certificados/inscripciones${qs}`, opts(empresa));
+  },
 
   create: (empresa: string, data: CreateInscripcionDto) =>
     api.post<Inscripcion>('/api/certificados/inscripciones', data, opts(empresa)),

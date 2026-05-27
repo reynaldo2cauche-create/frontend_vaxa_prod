@@ -3,7 +3,7 @@ import { inscripcionesApi } from '../api/inscripciones.api';
 import { participantesApi } from '../api/participantes.api';
 import type { Inscripcion, CreateInscripcionDto } from '../types';
 
-export function useInscripciones(empresa: string) {
+export function useInscripciones(empresa: string, grupoId?: number) {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -12,14 +12,14 @@ export function useInscripciones(empresa: string) {
     setLoading(true);
     setError(null);
     try {
-      const data = await inscripcionesApi.list(empresa);
+      const data = await inscripcionesApi.list(empresa, grupoId);
       setInscripciones(data);
     } catch (e: unknown) {
       setError((e as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [empresa]);
+  }, [empresa, grupoId]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
@@ -35,7 +35,6 @@ export function useInscripciones(empresa: string) {
     return actualizada;
   };
 
-  /** Inscripción manual: busca o crea participante, luego inscribe */
   const inscribirParticipante = async (
     participanteData: { tipo_documento_id: number; numero_documento: string; nombres: string; apellidos: string; email?: string },
     grupo_id: number

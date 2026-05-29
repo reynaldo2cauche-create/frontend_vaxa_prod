@@ -1,10 +1,11 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import TenantLayout from './layouts/TenantLayout';
 import HomePage from './pages/HomePage';
 import TenantRedirect from './pages/TenantRedirect';
 import LazyRoute from './components/LazyRoute';
 
 // Módulo SaaS de Certificados (importación directa — no usa el module-loader)
+import CertificadosLayout from '../modules/extensions/certificaciones/shared/components/CertificadosLayout';
 import AdminGuard   from '../modules/extensions/certificaciones/shared/components/AdminGuard';
 import AdminLayout  from '../modules/extensions/certificaciones/shared/components/AdminLayout';
 import AdminLogin   from '../modules/extensions/certificaciones/modules/AdminLogin';
@@ -18,25 +19,38 @@ import AdminConfig        from '../modules/extensions/certificaciones/modules/Ad
 import PublicRegistro from '../modules/extensions/certificaciones/modules/PublicRegistro';
 import PublicValidar  from '../modules/extensions/certificaciones/modules/PublicValidar';
 
+/** Compatibilidad: la ruta vieja /admin/login redirige al nuevo /login. */
+function LoginRedirect() {
+  const { empresa } = useParams<{ empresa: string }>();
+  return <Navigate to={`/${empresa}/certificados/login`} replace />;
+}
+
+/** Compatibilidad: la ruta vieja /admin (panel) redirige al nuevo /panel. */
+function PanelRedirect() {
+  const { empresa } = useParams<{ empresa: string }>();
+  return <Navigate to={`/${empresa}/certificados/panel`} replace />;
+}
+
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
 
       {/* ── Módulo SaaS de Certificados ─────────────────────────────────────
-          Rutas públicas y de admin para cualquier empresa cliente.
+          Público: /:empresa/certificados/ y /validar
+          Operador: /:empresa/certificados/login  y  /:empresa/certificados/panel
           URL: /:empresa/certificados/  (empresa = tenant_slug en la BD)
           ──────────────────────────────────────────────────────────────── */}
-      <Route path="/:empresa/certificados">
-        {/* Páginas públicas — sin autenticación */}
+      <Route path="/:empresa/certificados" element={<CertificadosLayout />}>
+        {/* Páginas públicas — sin autenticación (pero el slug debe existir) */}
         <Route index element={<PublicRegistro />} />
         <Route path="validar" element={<PublicValidar />} />
 
         {/* Login del operador */}
-        <Route path="admin/login" element={<AdminLogin />} />
+        <Route path="login" element={<AdminLogin />} />
 
         {/* Área protegida del operador */}
-        <Route path="admin" element={<AdminGuard />}>
+        <Route path="panel" element={<AdminGuard />}>
           <Route element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="programas"     element={<AdminProgramas />} />
@@ -47,6 +61,10 @@ export default function App() {
             <Route path="config"        element={<AdminConfig />} />
           </Route>
         </Route>
+
+        {/* Compat: rutas viejas con /admin → nuevas */}
+        <Route path="admin/login" element={<LoginRedirect />} />
+        <Route path="admin/*"     element={<PanelRedirect />} />
       </Route>
 
       {/* ── Tenants existentes (module-loader) ──────────────────────────── */}

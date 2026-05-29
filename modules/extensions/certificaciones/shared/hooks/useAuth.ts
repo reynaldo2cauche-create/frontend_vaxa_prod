@@ -16,7 +16,7 @@ export function useAuth(empresa: string) {
     try {
       const { token, usuario } = await authApi.login(empresa, correo, contrasena);
       authStorage.setSession(empresa, token, usuario);
-      navigate(`/${empresa}/certificados/admin`);
+      navigate(`/${empresa}/certificados/panel`);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.status === 401 ? 'Credenciales incorrectas' : err.message);
@@ -30,7 +30,7 @@ export function useAuth(empresa: string) {
 
   const logout = () => {
     authStorage.clearSession(empresa);
-    navigate(`/${empresa}/certificados/admin/login`);
+    navigate(`/${empresa}/certificados/login`);
   };
 
   return {

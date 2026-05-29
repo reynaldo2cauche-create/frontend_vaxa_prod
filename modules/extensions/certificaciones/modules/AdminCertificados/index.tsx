@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   FileBadge, Loader2, AlertCircle, Ban, Download, Sparkles, CheckCircle,
-  Search, Check, X, ChevronDown, Layers, Eye,
+  Search, Check, X, ChevronDown, Layers, Eye, Trash2,
 } from '@/components/ui/icon';
 import { useCertificados }  from '../../shared/hooks/useCertificados';
 import { useInscripciones } from '../../shared/hooks/useInscripciones';
@@ -72,7 +72,9 @@ export default function AdminCertificados() {
   const { empresa } = useParams<{ empresa: string }>();
   const confirm = useConfirm();
   const navigate = useNavigate();
-  const { certificados, loading, error, generar, anular } = useCertificados(empresa!);
+  const { certificados, loading, error, generar, anular, eliminar } = useCertificados(empresa!);
+
+  const SIN_CREDITOS_MSG = 'Te quedaste sin créditos. Contacta a Vaxa para renovar tu plan y seguir emitiendo certificados.';
 
   /** Si falta el diseño del programa, muestra un modal de advertencia con acceso a Configuración. */
   const avisarFaltaConfig = async (msg: string) => {
@@ -83,7 +85,7 @@ export default function AdminCertificados() {
       cancelText: 'Cerrar',
       variant: 'danger',
     });
-    if (ir) navigate(`/${empresa}/certificados/admin/config`);
+    if (ir) navigate(`/${empresa}/certificados/panel/config`);
   };
   const { inscripciones } = useInscripciones(empresa!);
   const { grupos } = useGrupos(empresa!);
@@ -98,9 +100,11 @@ export default function AdminCertificados() {
 
   const [generando, setGenerando] = useState<number | null>(null);
   const [anulando,  setAnulando]  = useState<number | null>(null);
+  const [eliminando, setEliminando] = useState<number | null>(null);
 
   const [errorMsg,  setErrorMsg]  = useState<string | null>(null);
   const [okMsg,     setOkMsg]     = useState<string | null>(null);
+  const [sinCreditosModal, setSinCreditosModal] = useState(false);
 
   const [preview,   setPreview]   = useState<{
     cert: Certificado & { empresa_nombre: string };
@@ -160,9 +164,27 @@ export default function AdminCertificados() {
     } catch (e: unknown) {
       const raw = (e as Error).message;
       if (raw.startsWith('FALTA_CONFIG:')) await avisarFaltaConfig(raw.replace('FALTA_CONFIG:', '').trim());
+      else if (raw.startsWith('SIN_CREDITOS')) setSinCreditosModal(true);
       else setErrorMsg(raw);
     }
     finally { setGenerando(null); }
+  };
+
+  const handleEliminar = async (id: number) => {
+    if (!(await confirm({
+      title: 'Eliminar certificado',
+      message: 'Se eliminará el certificado por completo y se DEVOLVERÁ 1 crédito a tu saldo. Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar y devolver crédito',
+      variant: 'danger',
+    }))) return;
+    setEliminando(id);
+    setErrorMsg(null); setOkMsg(null);
+    try {
+      await eliminar(id);
+      setOkMsg('Certificado eliminado · 1 crédito devuelto');
+      setTimeout(() => setOkMsg(null), 2500);
+    } catch (e: unknown) { setErrorMsg((e as Error).message); }
+    finally { setEliminando(null); }
   };
 
   const handleAnular = async (id: number) => {
@@ -197,6 +219,7 @@ export default function AdminCertificados() {
     let done = 0;
     let errors = 0;
     let configMsg: string | null = null;
+    let sinCreditos = false;
     for (const id of ids) {
       try {
         await generar(id);
@@ -204,6 +227,7 @@ export default function AdminCertificados() {
         errors += 1;
         const raw = (e as Error).message;
         if (raw.startsWith('FALTA_CONFIG:') && !configMsg) configMsg = raw.replace('FALTA_CONFIG:', '').trim();
+        else if (raw.startsWith('SIN_CREDITOS')) { sinCreditos = true; break; }  // sin saldo: no tiene sentido seguir
       }
       done += 1;
       setBatchProgress({ done, total: ids.length, errors });
@@ -214,6 +238,7 @@ export default function AdminCertificados() {
 
     // Si el programa no tiene diseño, el motivo principal es ése → modal de advertencia.
     if (configMsg) { await avisarFaltaConfig(configMsg); return; }
+    if (sinCreditos) { setSinCreditosModal(true); return; }
 
     if (errors === 0) {
       setOkMsg(`${done} certificados emitidos correctamente`);
@@ -416,7 +441,7 @@ export default function AdminCertificados() {
 
       {/* ═══════════ TAB: ANULADOS ═══════════ */}
       {!loading && tab === 'anulados' && (
-        <TablaAnulados items={anuladosFiltrados} />
+        <TablaAnulados items={anuladosFiltrados} eliminando={eliminando} onEliminar={handleEliminar} />
       )}
 
       {/* ── Preview PDF ──────────────────────────────────────── */}
@@ -426,6 +451,39 @@ export default function AdminCertificados() {
           config={preview.config}
           onClose={() => setPreview(null)}
         />
+      )}
+
+      {/* ── Modal: sin créditos ──────────────────────────────── */}
+      {sinCreditosModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(13,14,18,0.5)', backdropFilter: 'blur(4px)' }}
+          onMouseDown={() => setSinCreditosModal(false)}
+        >
+          <div
+            className="w-full max-w-[420px] bg-white rounded-2xl p-7 text-center"
+            style={{ boxShadow: '0 20px 60px -12px rgba(13,14,18,0.4)' }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+              style={{ background: '#FEE2E2', border: '1px solid #FCA5A5' }}>
+              <AlertCircle size={30} style={{ color: '#DC2626' }} />
+            </div>
+            <h3 className="text-[20px] font-bold" style={{ color: '#0D0E12' }}>
+              Te quedaste sin créditos
+            </h3>
+            <p className="text-[14px] mt-2 leading-relaxed" style={{ color: '#6B7280' }}>
+              {SIN_CREDITOS_MSG}
+            </p>
+            <button
+              onClick={() => setSinCreditosModal(false)}
+              className="w-full mt-6 py-3 rounded-xl text-[14px] font-semibold text-white"
+              style={{ background: '#DC2626' }}
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -806,7 +864,13 @@ function TablaEmitidos({
 }
 
 /* ── Anulados ──────────────────────────────────────────────── */
-function TablaAnulados({ items }: { items: Certificado[] }) {
+function TablaAnulados({
+  items, eliminando, onEliminar,
+}: {
+  items: Certificado[];
+  eliminando: number | null;
+  onEliminar: (id: number) => void;
+}) {
   const { page, setPage, totalPages, pageItems, startIndex, endIndex, total } =
     usePagination(items, 15);
 
@@ -823,7 +887,7 @@ function TablaAnulados({ items }: { items: Certificado[] }) {
 
   return (
     <div className="space-y-4">
-    <div className="bg-white rounded-2xl overflow-hidden opacity-75" style={{ border: '1px solid #EEECE6' }}>
+    <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #EEECE6' }}>
       <div>
         {pageItems.map((c, idx) => (
           <div
@@ -831,7 +895,7 @@ function TablaAnulados({ items }: { items: Certificado[] }) {
             className="flex items-center justify-between px-5 py-3.5 gap-3"
             style={{ borderBottom: idx < pageItems.length - 1 ? '1px solid #F5F4F0' : undefined }}
           >
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-[13px] font-medium line-through truncate" style={{ color: '#6B7280' }}>
                 {c.participante_nombre}
               </p>
@@ -841,6 +905,16 @@ function TablaAnulados({ items }: { items: Certificado[] }) {
               style={{ background: '#FEF2F2', color: '#B91C1C', border: '1px solid #FECACA' }}>
               {c.estado_nombre}
             </span>
+            <button
+              onClick={() => onEliminar(c.id)}
+              disabled={eliminando === c.id}
+              className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-xl transition-all flex-shrink-0"
+              style={{ background: '#0D0E12', color: '#fff', opacity: eliminando === c.id ? 0.5 : 1 }}
+              title="Eliminar definitivamente y devolver el crédito"
+            >
+              {eliminando === c.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+              Eliminar
+            </button>
           </div>
         ))}
       </div>

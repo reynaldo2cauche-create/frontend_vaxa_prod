@@ -141,11 +141,11 @@ export default function AdminInscripciones() {
 
   const handleGrupoChange = (val: string) => {
     if (!val) {
-      navigate(`/${empresa}/certificados/admin/inscripciones`);
+      navigate(`/${empresa}/certificados/panel/inscripciones`);
     } else {
       const g = grupos.find(g => g.id === Number(val));
       const n = g ? `&nombre=${encodeURIComponent(g.nombre_grupo)}` : '';
-      navigate(`/${empresa}/certificados/admin/inscripciones?grupo=${val}${n}`);
+      navigate(`/${empresa}/certificados/panel/inscripciones?grupo=${val}${n}`);
     }
   };
 
@@ -172,7 +172,7 @@ export default function AdminInscripciones() {
       {/* Back */}
       {grupoId && (
         <button
-          onClick={() => navigate(`/${empresa}/certificados/admin/grupos`)}
+          onClick={() => navigate(`/${empresa}/certificados/panel/grupos`)}
           className="flex items-center gap-1.5 text-[13px] font-medium transition-colors hover:opacity-70"
           style={{ color: '#9CA3AF' }}
         >

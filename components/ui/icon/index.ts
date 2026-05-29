@@ -5,7 +5,7 @@ export {
   Building2, Eye, EyeOff, AlertCircle, Loader2, FileText, Calendar, Download,
   Edit2, Save, X, RefreshCw, Package, Users, Star, ChevronDown, ChevronUp,
   ArrowLeft, CheckCircle, XCircle, Award, Shield, Clock, Verified, Sparkles,
-  FolderOpen, TrendingUp, Activity, CheckCircle2, ArrowRight, Upload, ImageIcon,
+  FolderOpen, TrendingUp, Activity, CheckCircle2, ArrowRight, ArrowUpRight, Upload, ImageIcon,
   FileSpreadsheet, Type, PenTool, ChevronRight, CreditCard, Check, Zap, FileImage,
   Unlock, FileSignature, BarChart3, LayoutDashboard, Phone, MapPin, Globe,
   DollarSign, Info, LogIn,

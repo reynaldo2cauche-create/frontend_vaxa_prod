@@ -25,6 +25,10 @@ export const certificadosApi = {
       opts(empresa)
     ),
 
+  /** Elimina el certificado por completo y DEVUELVE el crédito. */
+  eliminar: (empresa: string, id: number) =>
+    api.delete<void>(`/api/certificados/emision/${id}`, opts(empresa)),
+
   regenerarPDF: (empresa: string, id: number) =>
     api.post<{ url: string }>(
       `/api/certificados/emision/${id}/regenerar-pdf`,

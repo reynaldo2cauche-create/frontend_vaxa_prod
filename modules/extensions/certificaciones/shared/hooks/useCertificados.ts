@@ -36,7 +36,13 @@ export function useCertificados(empresa: string) {
     );
   };
 
-  return { certificados, loading, error, generar, anular, refetch: fetchAll };
+  /** Elimina el certificado por completo (devuelve crédito). */
+  const eliminar = async (id: number) => {
+    await certificadosApi.eliminar(empresa, id);
+    setCertificados(prev => prev.filter(c => c.id !== id));
+  };
+
+  return { certificados, loading, error, generar, anular, eliminar, refetch: fetchAll };
 }
 
 export function useValidarCertificado() {

@@ -1,10 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Users, FileBadge, BookOpen, Layers, GraduationCap, ChevronRight, TrendingUp } from '@/components/ui/icon';
+import { Users, FileBadge, BookOpen, Layers, GraduationCap, ChevronRight, TrendingUp, AlertCircle, CreditCard } from '@/components/ui/icon';
 import { authStorage }      from '@/lib/auth';
 import { useProgramas }     from '../../shared/hooks/useProgramas';
 import { useGrupos }        from '../../shared/hooks/useGrupos';
 import { useInscripciones } from '../../shared/hooks/useInscripciones';
 import { useCertificados }  from '../../shared/hooks/useCertificados';
+import { useCreditos }      from '../../shared/hooks/useCreditos';
 
 /* ── Estado config ──────────────────────────────────────────── */
 const ESTADOS = [
@@ -146,7 +147,7 @@ function BarChart({ data }: BarChartProps) {
 export default function AdminDashboard() {
   const { empresa } = useParams<{ empresa: string }>();
   const navigate    = useNavigate();
-  const base        = `/${empresa}/certificados/admin`;
+  const base        = `/${empresa}/certificados/panel`;
 
   const user = authStorage.getUser(empresa!);
 
@@ -154,6 +155,10 @@ export default function AdminDashboard() {
   const { grupos }        = useGrupos(empresa!);
   const { inscripciones } = useInscripciones(empresa!);
   const { certificados }  = useCertificados(empresa!);
+  const { estado: creditos } = useCreditos(empresa!);
+
+  const sinCreditos = !!creditos && creditos.saldo <= 0;
+  const creditosBajos = !!creditos && creditos.saldo > 0 && creditos.saldo <= 10;
 
   const aprobados  = inscripciones.filter(i => i.estado_id === 3).length;
   const emitidos   = certificados.filter(c => c.estado_id === 1).length;
@@ -185,6 +190,44 @@ export default function AdminDashboard() {
           Aquí tienes el resumen de tu sistema
         </p>
       </div>
+
+      {/* ── Alerta: sin créditos ─────────────────────────────── */}
+      {sinCreditos && (
+        <div
+          className="rounded-2xl p-6 flex items-start gap-4 stagger-1 page-enter"
+          style={{ background: '#FEF2F2', border: '1.5px solid #FECACA' }}
+        >
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+            style={{ background: '#FEE2E2', border: '1px solid #FCA5A5' }}>
+            <AlertCircle size={24} style={{ color: '#DC2626' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[18px] font-bold" style={{ color: '#B91C1C' }}>
+              Te quedaste sin créditos
+            </h3>
+            <p className="text-[14px] mt-1 leading-relaxed" style={{ color: '#9F1239' }}>
+              No puedes emitir más certificados. Contacta a Vaxa para renovar tu plan y seguir emitiendo.
+            </p>
+          </div>
+          <div className="hidden sm:flex flex-col items-center justify-center px-4 flex-shrink-0">
+            <span className="text-[32px] font-bold leading-none" style={{ color: '#DC2626' }}>0</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider mt-1" style={{ color: '#B91C1C' }}>créditos</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Aviso: créditos bajos ────────────────────────────── */}
+      {creditosBajos && (
+        <div
+          className="rounded-2xl px-5 py-4 flex items-center gap-3 stagger-1 page-enter"
+          style={{ background: '#FFFBEB', border: '1.5px solid #FDE68A' }}
+        >
+          <CreditCard size={20} style={{ color: '#D97706', flexShrink: 0 }} />
+          <p className="text-[13.5px] font-medium" style={{ color: '#92400E' }}>
+            Te quedan <b>{creditos!.saldo}</b> {creditos!.saldo === 1 ? 'crédito' : 'créditos'}. Considera renovar tu plan pronto.
+          </p>
+        </div>
+      )}
 
       {/* ── 4 Stat cards ─────────────────────────────────────── */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 stagger-2 page-enter">

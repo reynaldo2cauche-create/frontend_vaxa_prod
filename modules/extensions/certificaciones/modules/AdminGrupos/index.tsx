@@ -166,7 +166,7 @@ export default function AdminGrupos() {
   };
 
   const handleVerInscritos = (g: Grupo) =>
-    navigate(`/${empresa}/certificados/admin/inscripciones?grupo=${g.id}&nombre=${encodeURIComponent(g.nombre_grupo)}`);
+    navigate(`/${empresa}/certificados/panel/inscripciones?grupo=${g.id}&nombre=${encodeURIComponent(g.nombre_grupo)}`);
 
   const activos   = grupos.filter(g => g.activo).length;
   const inactivos = grupos.filter(g => !g.activo).length;

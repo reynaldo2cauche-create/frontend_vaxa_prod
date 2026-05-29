@@ -43,7 +43,10 @@
       "Bash(ls src/modules/certificados/emision)",
       "Bash(npx ts-node *)",
       "Bash(node _inspect.js)",
-      "Bash(rm -f _inspect.js)"
+      "Bash(rm -f _inspect.js)",
+      "Bash(echo \"=== EXIT $? ===\")",
+      "Bash(echo \"=== FRONT EXIT $? ===\")",
+      "Bash(echo \"=== BACK EXIT $? ===\")"
     ],
     "deny": [],
     "ask": []

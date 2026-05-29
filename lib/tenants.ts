@@ -61,7 +61,7 @@ const tenants: Record<string, TenantConfig> = {
   // ── Empresas cliente del SaaS de certificados ──────────────────────────────
   // Para onboardear un cliente nuevo: agrega su tenant_slug aquí con hasCertificados: true
   // URL pública:  /:id/certificados/
-  // URL admin:    /:id/certificados/admin/
+  // URL panel:    /:id/certificados/panel/  (login en /:id/certificados/login)
   'vaxa': {
     id: 'vaxa',
     name: 'VAXA SISTEMAS',

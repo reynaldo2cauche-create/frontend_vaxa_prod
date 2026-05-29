@@ -1,0 +1,45 @@
+import { useEffect, useState } from 'react';
+import { Outlet, useParams } from 'react-router-dom';
+import { Loader2 } from '@/components/ui/icon';
+import { publicApi } from '../api/public.api';
+import EmpresaNotFound from './EmpresaNotFound';
+
+type Estado = 'verificando' | 'existe' | 'no-existe';
+
+/**
+ * Envuelve todo /:empresa/certificados (público + admin). Valida contra la BD
+ * que el slug exista ANTES de renderizar login, registro o panel. Si no existe,
+ * muestra la pantalla 404 en vez de la plataforma.
+ */
+export default function CertificadosLayout() {
+  const { empresa } = useParams<{ empresa: string }>();
+  const slug = empresa!;
+  const [estado, setEstado] = useState<Estado>('verificando');
+
+  useEffect(() => {
+    let activo = true;
+    setEstado('verificando');
+    publicApi
+      .existeEmpresa(slug)
+      .then(r => { if (activo) setEstado(r.exists ? 'existe' : 'no-existe'); })
+      // Falla ABIERTO: si no se pudo verificar (red caída, CORS, 500), dejamos
+      // pasar y que el backend imponga la seguridad. Solo bloqueamos cuando la
+      // API dice explícitamente que la empresa no existe.
+      .catch(() => { if (activo) setEstado('existe'); });
+    return () => { activo = false; };
+  }, [slug]);
+
+  if (estado === 'verificando') {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0D0E12' }}>
+        <Loader2 size={26} className="animate-spin" style={{ color: '#D97706' }} />
+      </div>
+    );
+  }
+
+  if (estado === 'no-existe') {
+    return <EmpresaNotFound empresa={slug} />;
+  }
+
+  return <Outlet />;
+}

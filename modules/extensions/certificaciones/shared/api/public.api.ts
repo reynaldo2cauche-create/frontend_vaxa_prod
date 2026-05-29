@@ -3,6 +3,10 @@ import type { Catalogos, Grupo, RegistroPublicoDto } from '../types';
 
 /** Endpoints públicos — no requieren JWT ni x-tenant-id header */
 export const publicApi = {
+  /** Verifica si el tenant_slug corresponde a una empresa activa. */
+  existeEmpresa: (empresa: string) =>
+    api.get<{ exists: boolean; nombre?: string }>(`/public/certificados/${empresa}/existe`),
+
   getCatalogos: (empresa: string) =>
     api.get<Catalogos>(`/public/certificados/${empresa}/catalogos`),
 

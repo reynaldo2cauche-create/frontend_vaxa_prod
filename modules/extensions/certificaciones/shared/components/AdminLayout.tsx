@@ -2,13 +2,38 @@ import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, Layers, ClipboardList, FileBadge,
-  Settings, LogOut, Menu, X, GraduationCap, Globe, Users,
+  Settings, LogOut, Menu, X, GraduationCap, Globe, Users, CreditCard,
 } from '@/components/ui/icon';
 import { authStorage } from '@/lib/auth';
 import { ConfirmProvider } from '../hooks/useConfirm';
+import { useCreditos } from '../hooks/useCreditos';
+
+/** Pastilla con el saldo de créditos de certificados de la empresa. */
+function CreditosBadge({ empresa }: { empresa: string }) {
+  const { estado, loading } = useCreditos(empresa);
+  if (loading || !estado) return null;
+
+  const saldo = estado.saldo;
+  const color = saldo <= 0 ? '#DC2626' : saldo <= 10 ? '#D97706' : '#0D7C66';
+  const bg    = saldo <= 0 ? '#FEF2F2' : saldo <= 10 ? '#FEF3C7' : '#ECFDF5';
+  const border= saldo <= 0 ? '#FECACA' : saldo <= 10 ? '#FDE68A' : '#A7F3D0';
+
+  return (
+    <div
+      className="flex items-center gap-2 px-3 py-1.5 rounded-xl"
+      style={{ background: bg, border: `1px solid ${border}` }}
+      title={`${saldo} créditos disponibles de ${estado.asignados_total} asignados`}
+    >
+      <CreditCard size={14} style={{ color }} />
+      <span className="text-[12px] font-semibold" style={{ color }}>
+        {saldo} {saldo === 1 ? 'crédito' : 'créditos'}
+      </span>
+    </div>
+  );
+}
 
 const PAGE_LABELS: Record<string, string> = {
-  admin:         'Dashboard',
+  panel:         'Dashboard',
   programas:     'Programas',
   grupos:        'Grupos',
   estudiantes:   'Estudiantes',
@@ -34,15 +59,15 @@ export default function AdminLayout() {
   const [open, setOpen] = useState(false);
   const user = authStorage.getUser(empresa!);
 
-  const base = `/${empresa}/certificados/admin`;
+  const base = `/${empresa}/certificados/panel`;
 
   const handleLogout = () => {
     authStorage.clearSession(empresa!);
-    navigate(`/${empresa}/certificados/admin/login`);
+    navigate(`/${empresa}/certificados/login`);
   };
 
   const segments  = location.pathname.split('/');
-  const lastSeg   = segments[segments.length - 1] ?? 'admin';
+  const lastSeg   = segments[segments.length - 1] ?? 'panel';
   const pageLabel = PAGE_LABELS[lastSeg] ?? 'Panel';
 
   const initials = user
@@ -202,13 +227,14 @@ export default function AdminLayout() {
         >
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-widest mb-0.5" style={{ color: '#C8C3BB' }}>
-              Panel admin · {empresa}
+              Panel · {empresa}
             </p>
             <h1 className="text-[20px] font-bold tracking-tight" style={{ color: '#0D0E12' }}>
               {pageLabel}
             </h1>
           </div>
           <div className="flex items-center gap-3">
+            <CreditosBadge empresa={empresa!} />
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold flex-shrink-0"
               style={{ background: '#FEF3C7', color: '#D97706', border: '1px solid #FDE68A' }}
@@ -242,7 +268,7 @@ export default function AdminLayout() {
               <GraduationCap size={13} style={{ color: '#D97706' }} />
             </div>
             <span className="text-[14px] font-bold" style={{ color: '#0D0E12' }}>
-              Panel Admin
+              Panel
             </span>
           </div>
         </header>

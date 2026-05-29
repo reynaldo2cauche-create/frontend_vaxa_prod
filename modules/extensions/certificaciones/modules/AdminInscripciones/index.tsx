@@ -1,109 +1,138 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import {
-  ClipboardList, Loader2, AlertCircle, Search, ChevronLeft,
-  Users, ArrowRight, UserCheck,
+  ClipboardList, Loader2, AlertCircle, Search,
+  ChevronLeft, Users, UserCheck,
 } from '@/components/ui/icon';
 import { useInscripciones } from '../../shared/hooks/useInscripciones';
-import { useGrupos } from '../../shared/hooks/useGrupos';
+import { useGrupos }        from '../../shared/hooks/useGrupos';
+import { usePagination }    from '../../shared/hooks/usePagination';
+import { unidadesApi }      from '../../shared/api/unidades.api';
+import Pagination from '../../shared/components/Pagination';
+import NotasGrupo from './NotasGrupo';
 import type { Inscripcion } from '../../shared/types';
 
-const ESTADOS: Record<number, { label: string; bg: string; text: string }> = {
-  1: { label: 'Inscrito',    bg: 'bg-blue-50',   text: 'text-blue-700' },
-  2: { label: 'En curso',    bg: 'bg-amber-50',  text: 'text-amber-700' },
-  3: { label: 'Aprobado',    bg: 'bg-emerald-50', text: 'text-emerald-700' },
-  4: { label: 'Desaprobado', bg: 'bg-red-50',    text: 'text-red-600' },
-  5: { label: 'Retirado',    bg: 'bg-gray-100',  text: 'text-gray-500' },
-  6: { label: 'Rechazado',   bg: 'bg-orange-50', text: 'text-orange-700' },
-};
-
-const TRANSICIONES: Record<number, number[]> = {
-  1: [2, 6],
-  2: [3, 4, 5],
-  3: [], 4: [], 5: [], 6: [],
+/* ── Estado config ──────────────────────────────────────────── */
+const ESTADOS: Record<number, { label: string; bg: string; color: string; border: string }> = {
+  1: { label: 'Inscrito',    bg: '#EFF6FF', color: '#1D4ED8', border: '#BFDBFE' },
+  2: { label: 'En curso',    bg: '#FFFBEB', color: '#B45309', border: '#FDE68A' },
+  3: { label: 'Aprobado',    bg: '#F0FDF4', color: '#15803D', border: '#BBF7D0' },
+  4: { label: 'Desaprobado', bg: '#FEF2F2', color: '#B91C1C', border: '#FECACA' },
+  5: { label: 'Retirado',    bg: '#F5F4F0', color: '#64748B', border: '#E2E8F0' },
+  6: { label: 'Rechazado',   bg: '#FFF7ED', color: '#C2410C', border: '#FDBA74' },
 };
 
 function EstadoBadge({ estadoId }: { estadoId: number }) {
-  const e = ESTADOS[estadoId] ?? { label: 'Desconocido', bg: 'bg-gray-100', text: 'text-gray-500' };
+  const e = ESTADOS[estadoId] ?? { label: 'Desconocido', bg: '#F5F4F0', color: '#64748B', border: '#E2E8F0' };
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase ${e.bg} ${e.text}`}>
+    <span
+      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+      style={{ background: e.bg, color: e.color, border: `1px solid ${e.border}` }}
+    >
       {e.label}
     </span>
   );
 }
 
-function InscripcionRow({ inscripcion, onCambiarEstado }: {
+/* ── Inscripcion row ────────────────────────────────────────── */
+function InscripcionRow({ inscripcion, onCambiarEstado, isLast, tieneUnidades }: {
   inscripcion: Inscripcion;
   onCambiarEstado: (id: number, estado: number) => void;
+  isLast: boolean;
+  /** true: programa con unidades (aprobación por notas) · false: sin unidades (manual) · null: desconocido */
+  tieneUnidades: boolean | null;
 }) {
-  const [loading, setLoading] = useState(false);
-  const siguientes = TRANSICIONES[inscripcion.estado_id] ?? [];
+  const [rowLoading, setRowLoading] = useState(false);
 
   const handleCambio = async (nuevoEstado: number) => {
-    setLoading(true);
+    if (nuevoEstado === inscripcion.estado_id) return;
+    setRowLoading(true);
     try { await onCambiarEstado(inscripcion.id, nuevoEstado); }
-    finally { setLoading(false); }
+    finally { setRowLoading(false); }
   };
 
-  return (
-    <div className="group bg-white rounded-2xl border border-black/[0.06] shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] p-4 hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.07)] transition-all duration-200">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-            <Users size={15} className="text-gray-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[14px] font-semibold text-gray-900 leading-tight">{inscripcion.participante_nombre}</p>
-            <p className="text-[12px] text-gray-400 mt-0.5">{inscripcion.numero_documento}</p>
-          </div>
-        </div>
+  // Aprobado(3)/Desaprobado(4) solo son manuales cuando el programa NO tiene unidades.
+  // Si tiene unidades, los decide el sistema con las notas (no se ofrecen a mano).
+  // El estado actual siempre se incluye para que se muestre seleccionado.
+  const opciones = [1, 2, 3, 4, 5, 6].filter(id =>
+    id === inscripcion.estado_id ||
+    ((id === 3 || id === 4) ? tieneUnidades === false : true),
+  );
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <EstadoBadge estadoId={inscripcion.estado_id} />
-          {siguientes.map(nuevoEstado => (
-            <button key={nuevoEstado}
-              onClick={() => handleCambio(nuevoEstado)}
-              disabled={loading}
-              className={`flex items-center gap-1.5 text-[12px] px-2.5 py-1 border rounded-xl font-medium transition-all disabled:opacity-40 ${
-                nuevoEstado === 3
-                  ? 'border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600'
-                  : nuevoEstado === 4
-                  ? 'border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600'
-                  : 'border-gray-200 text-gray-600 hover:bg-gray-800 hover:text-white hover:border-gray-800'
-              }`}>
-              {loading ? <Loader2 size={11} className="animate-spin" /> : <ArrowRight size={11} />}
-              {ESTADOS[nuevoEstado]?.label}
-            </button>
-          ))}
+  return (
+    <div
+      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 transition-colors"
+      style={{ borderBottom: isLast ? undefined : '1px solid #F5F4F0' }}
+      onMouseEnter={e => (e.currentTarget.style.background = '#FAFAF8')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+    >
+      {/* Participante info */}
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: '#F5F3FF' }}>
+          <Users size={15} style={{ color: '#7C3AED' }} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[14px] font-semibold truncate" style={{ color: '#0D0E12' }}>
+            {inscripcion.participante_nombre}
+          </p>
+          <p className="text-[11px] mt-0.5" style={{ color: '#9CA3AF' }}>
+            {inscripcion.numero_documento}
+            {inscripcion.nombre_grupo && ` · ${inscripcion.nombre_grupo}`}
+          </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-50">
-        <p className="text-[11px] text-gray-400">
-          Grupo: <span className="text-gray-600 font-medium">{inscripcion.nombre_grupo}</span>
-        </p>
-        <p className="text-[11px] text-gray-400">
-          Inscrito: {new Date(inscripcion.fecha_inscripcion).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
-        </p>
+      {/* Estado + selector de cambio */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <EstadoBadge estadoId={inscripcion.estado_id} />
+        <div className="flex items-center gap-1.5">
+          <select
+            value={inscripcion.estado_id}
+            onChange={e => handleCambio(Number(e.target.value))}
+            disabled={rowLoading}
+            className="vx-input"
+            style={{ padding: '0.35rem 0.6rem', fontSize: 12, minWidth: 135 }}
+            title="Cambiar estado del participante"
+          >
+            {opciones.map(id => (
+              <option key={id} value={id}>{ESTADOS[id]?.label}</option>
+            ))}
+          </select>
+          {rowLoading && <Loader2 size={13} className="animate-spin" style={{ color: '#9CA3AF' }} />}
+        </div>
       </div>
     </div>
   );
 }
 
+/* ── Page ───────────────────────────────────────────────────── */
 export default function AdminInscripciones() {
-  const { empresa } = useParams<{ empresa: string }>();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { empresa }      = useParams<{ empresa: string }>();
+  const navigate         = useNavigate();
+  const [searchParams]   = useSearchParams();
 
-  const grupoIdParam = searchParams.get('grupo');
-  const grupoNombre = searchParams.get('nombre');
-  const grupoId = grupoIdParam ? Number(grupoIdParam) : undefined;
+  const grupoIdParam  = searchParams.get('grupo');
+  const grupoNombre   = searchParams.get('nombre');
+  const grupoId       = grupoIdParam ? Number(grupoIdParam) : undefined;
 
   const { inscripciones, loading, error, cambiarEstado } = useInscripciones(empresa!, grupoId);
   const { grupos } = useGrupos(empresa!);
 
   const [filtroEstado, setFiltroEstado] = useState<number | 'todos'>('todos');
-  const [busqueda, setBusqueda] = useState('');
+  const [busqueda,     setBusqueda]     = useState('');
+  const [vista,        setVista]        = useState<'inscripciones' | 'notas'>('inscripciones');
+
+  // ¿El programa del grupo seleccionado tiene unidades? → define si Aprobado/Desaprobado son manuales.
+  const programaId = grupoId ? grupos.find(g => g.id === grupoId)?.programa_id : undefined;
+  const [tieneUnidades, setTieneUnidades] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!programaId) { setTieneUnidades(null); return; }
+    let cancel = false;
+    unidadesApi.list(empresa!, programaId)
+      .then(u => { if (!cancel) setTieneUnidades(u.length > 0); })
+      .catch(() => { if (!cancel) setTieneUnidades(null); });
+    return () => { cancel = true; };
+  }, [empresa, programaId]);
 
   const handleCambiarEstado = async (id: number, estado: number) => {
     try { await cambiarEstado(id, estado); }
@@ -115,68 +144,74 @@ export default function AdminInscripciones() {
       navigate(`/${empresa}/certificados/admin/inscripciones`);
     } else {
       const g = grupos.find(g => g.id === Number(val));
-      const nombre = g ? `&nombre=${encodeURIComponent(g.nombre_grupo)}` : '';
-      navigate(`/${empresa}/certificados/admin/inscripciones?grupo=${val}${nombre}`);
+      const n = g ? `&nombre=${encodeURIComponent(g.nombre_grupo)}` : '';
+      navigate(`/${empresa}/certificados/admin/inscripciones?grupo=${val}${n}`);
     }
   };
 
   const filtradas = inscripciones.filter(i => {
-    const coincideEstado = filtroEstado === 'todos' || i.estado_id === filtroEstado;
+    const okEstado = filtroEstado === 'todos' || i.estado_id === filtroEstado;
     const q = busqueda.toLowerCase();
-    const coincideBusqueda = !q ||
-      i.participante_nombre.toLowerCase().includes(q) ||
-      i.numero_documento.includes(q);
-    return coincideEstado && coincideBusqueda;
+    const okBusq = !q || i.participante_nombre.toLowerCase().includes(q) || i.numero_documento.includes(q);
+    return okEstado && okBusq;
   });
 
-  const resumen = Object.entries(ESTADOS).map(([id, e]) => ({
-    estadoId: Number(id),
-    label: e.label,
-    count: inscripciones.filter(i => i.estado_id === Number(id)).length,
-    bg: e.bg,
-    text: e.text,
-  })).filter(r => r.count > 0);
+  const resumen = Object.entries(ESTADOS)
+    .map(([id, e]) => ({
+      estadoId: Number(id),
+      count: inscripciones.filter(i => i.estado_id === Number(id)).length,
+      ...e,
+    }))
+    .filter(r => r.count > 0);
+
+  const { page, setPage, totalPages, pageItems, startIndex, endIndex, total } =
+    usePagination(filtradas, 10);
 
   return (
-    <div className="space-y-6 page-enter">
-      {/* Header */}
-      <div>
-        {grupoId && (
-          <button
-            onClick={() => navigate(`/${empresa}/certificados/admin/grupos`)}
-            className="flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-gray-700 transition-colors mb-3 font-medium">
-            <ChevronLeft size={14} />
-            Volver a grupos
-          </button>
-        )}
-        <h1 className="text-[22px] font-semibold tracking-tight text-gray-950">
-          {grupoNombre ? grupoNombre : 'Inscripciones'}
-        </h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          {grupoId ? 'Participantes de este grupo' : 'Gestiona el estado de cada participante'}
-        </p>
-      </div>
+    <div className="space-y-5 page-enter">
+      {/* Back */}
+      {grupoId && (
+        <button
+          onClick={() => navigate(`/${empresa}/certificados/admin/grupos`)}
+          className="flex items-center gap-1.5 text-[13px] font-medium transition-colors hover:opacity-70"
+          style={{ color: '#9CA3AF' }}
+        >
+          <ChevronLeft size={14} /> Volver a grupos
+        </button>
+      )}
 
-      {/* Selector de grupo + filtros */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Sub-header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        {/* Selector de grupo */}
         <select
           value={grupoId ?? ''}
           onChange={e => handleGrupoChange(e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all text-gray-700">
+          className="vx-input"
+          style={{ maxWidth: 240 }}
+        >
           <option value="">Todos los grupos</option>
           {grupos.map(g => <option key={g.id} value={g.id}>{g.nombre_grupo}</option>)}
         </select>
 
+        {/* Buscador */}
         <div className="relative flex-1">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" placeholder="Buscar por nombre o documento..."
-            value={busqueda} onChange={e => setBusqueda(e.target.value)}
-            className="w-full pl-8 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all" />
+          <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#B0A898' }} />
+          <input
+            type="text"
+            placeholder="Buscar por nombre o documento..."
+            value={busqueda}
+            onChange={e => setBusqueda(e.target.value)}
+            className="vx-input vx-input-icon"
+          />
         </div>
 
-        <select value={filtroEstado}
+        {/* Filtro estado */}
+        <select
+          value={filtroEstado}
           onChange={e => setFiltroEstado(e.target.value === 'todos' ? 'todos' : +e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all text-gray-700">
+          className="vx-input"
+          style={{ maxWidth: 180 }}
+        >
           <option value="todos">Todos los estados</option>
           {Object.entries(ESTADOS).map(([id, { label }]) => (
             <option key={id} value={id}>{label}</option>
@@ -184,17 +219,57 @@ export default function AdminInscripciones() {
         </select>
       </div>
 
-      {/* Resumen rápido */}
+      {/* Tabs: Inscripciones / Notas (siempre visibles) */}
+      <div className="flex items-center gap-1 p-1 rounded-xl w-fit" style={{ background: '#F0EEE9' }}>
+        {([['inscripciones', 'Inscripciones'], ['notas', 'Notas']] as const).map(([key, lbl]) => (
+          <button
+            key={key}
+            onClick={() => setVista(key)}
+            className="px-4 py-1.5 rounded-lg text-[13px] font-semibold transition-all"
+            style={vista === key
+              ? { background: '#fff', color: '#0D0E12', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }
+              : { background: 'transparent', color: '#9CA3AF' }}
+          >
+            {lbl}
+          </button>
+        ))}
+      </div>
+
+      {/* ════════ VISTA NOTAS ════════ */}
+      {vista === 'notas' && (
+        grupoId ? (
+          <NotasGrupo empresa={empresa!} grupoId={grupoId} />
+        ) : (
+          <div className="bg-white rounded-2xl py-14 text-center" style={{ border: '1px solid #EEECE6' }}>
+            <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: '#F3F0FF', color: '#7C3AED' }}>
+              <ClipboardList size={22} />
+            </div>
+            <p className="text-[14px] font-semibold" style={{ color: '#374151' }}>Elige un grupo para registrar notas</p>
+            <p className="text-[13px] mt-1" style={{ color: '#9CA3AF' }}>
+              Usa el selector <span className="font-semibold">“Todos los grupos”</span> de arriba y elige el grupo que vas a calificar.
+            </p>
+          </div>
+        )
+      )}
+
+      {/* ════════ VISTA INSCRIPCIONES ════════ */}
+      {vista === 'inscripciones' && (<>
+
+      {/* Pills resumen */}
       {!loading && resumen.length > 0 && (
-        <div className="flex flex-wrap gap-2 stagger-1 page-enter">
+        <div className="flex flex-wrap gap-2">
           {resumen.map(r => (
-            <button key={r.estadoId}
+            <button
+              key={r.estadoId}
               onClick={() => setFiltroEstado(filtroEstado === r.estadoId ? 'todos' : r.estadoId)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold transition-all border ${
-                filtroEstado === r.estadoId
-                  ? `${r.bg} ${r.text} border-current scale-105`
-                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
-              }`}>
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all"
+              style={{
+                background: filtroEstado === r.estadoId ? r.color : r.bg,
+                color: filtroEstado === r.estadoId ? '#fff' : r.color,
+                border: `1.5px solid ${filtroEstado === r.estadoId ? r.color : r.border}`,
+                transform: filtroEstado === r.estadoId ? 'scale(1.04)' : 'scale(1)',
+              }}
+            >
               <UserCheck size={11} />
               {r.label}
               <span className="font-bold">{r.count}</span>
@@ -203,36 +278,63 @@ export default function AdminInscripciones() {
         </div>
       )}
 
-      {loading && (
-        <div className="flex justify-center py-16 text-gray-300">
-          <Loader2 size={22} className="animate-spin" />
-        </div>
-      )}
+      {/* Loading / Error */}
+      {loading && <div className="flex justify-center py-16" style={{ color: '#D1D5DB' }}><Loader2 size={22} className="animate-spin" /></div>}
       {error && (
-        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+        <div className="flex items-center gap-2 text-[13px] px-4 py-3 rounded-xl"
+          style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#B91C1C' }}>
           <AlertCircle size={14} /> {error}
         </div>
       )}
 
+      {/* Empty */}
       {!loading && filtradas.length === 0 && (
-        <div className="text-center py-16">
-          <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
-            <ClipboardList size={20} className="text-gray-400" />
+        <div className="bg-white rounded-2xl py-14 text-center" style={{ border: '1px solid #EEECE6' }}>
+          <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: '#F5F4F0', color: '#B0A898' }}>
+            <ClipboardList size={22} />
           </div>
-          <p className="text-sm font-medium text-gray-500">Sin inscripciones</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-[14px] font-semibold" style={{ color: '#374151' }}>Sin inscripciones</p>
+          <p className="text-[13px] mt-1" style={{ color: '#9CA3AF' }}>
             {busqueda || filtroEstado !== 'todos' ? 'Prueba con otros filtros' : 'Este grupo no tiene inscritos aún'}
           </p>
         </div>
       )}
 
-      <div className="space-y-2.5">
-        {filtradas.map((i, idx) => (
-          <div key={i.id} className={`stagger-${Math.min(idx + 1, 4) as 1 | 2 | 3 | 4} page-enter`}>
-            <InscripcionRow inscripcion={i} onCambiarEstado={handleCambiarEstado} />
+      {/* Table */}
+      {!loading && filtradas.length > 0 && (
+        <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #EEECE6' }}>
+          {/* Header */}
+          <div className="hidden sm:flex items-center px-5 py-3" style={{ background: '#FAFAF8', borderBottom: '1px solid #EEECE6' }}>
+            <p className="flex-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#9CA3AF' }}>Participante</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#9CA3AF' }}>Estado / Acciones</p>
           </div>
-        ))}
-      </div>
+          {pageItems.map((i, idx) => (
+            <InscripcionRow
+              key={i.id}
+              inscripcion={i}
+              onCambiarEstado={handleCambiarEstado}
+              isLast={idx === pageItems.length - 1}
+              tieneUnidades={tieneUnidades}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Paginación */}
+      {!loading && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onChange={setPage}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          total={total}
+          itemLabel="inscripciones"
+          accentColor="#0EA5E9"
+        />
+      )}
+
+      </>)}
     </div>
   );
 }

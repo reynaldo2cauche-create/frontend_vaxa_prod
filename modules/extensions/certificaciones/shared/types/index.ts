@@ -47,6 +47,8 @@ export interface Programa {
   nombre: string;
   descripcion: string | null;
   horas_academicas: number;
+  unidad_label: string;
+  nota_minima: number;
   activo: number;
 }
 
@@ -55,6 +57,48 @@ export interface CreateProgramaDto {
   nombre: string;
   descripcion?: string;
   horas_academicas: number;
+  unidad_label?: string;
+  nota_minima?: number;
+}
+
+// ── Unidades y Notas ─────────────────────────────────────────────────────────
+export interface Unidad {
+  id: number;
+  empresa_id: number;
+  programa_id: number;
+  nombre: string;
+  orden: number;
+  activo: number;
+}
+
+export interface CreateUnidadDto {
+  programa_id: number;
+  nombre: string;
+  orden?: number;
+}
+
+/** Una fila (alumno) dentro de la matriz de notas de un grupo. */
+export interface NotasFila {
+  inscripcion_id: number;
+  participante_nombre: string;
+  numero_documento: string;
+  estado_id: number;
+  estado_nombre: string;
+  notas: Record<number, number>;   // { unidad_id: nota }
+  promedio: number | null;
+  completo: boolean;
+  aprobado: boolean | null;
+}
+
+export interface NotasMatriz {
+  grupo_id: number;
+  nombre_grupo: string;
+  programa_id: number;
+  programa_nombre: string;
+  unidad_label: string;
+  nota_minima: number;
+  unidades: { id: number; nombre: string; orden: number }[];
+  filas: NotasFila[];
 }
 
 // ── Grupo ───────────────────────────────────────────────────────────────────
@@ -144,7 +188,13 @@ export interface Certificado {
   participante_nombre: string;
   numero_documento: string;
   programa_nombre: string;
+  tipo_programa_nombre?: string;
+  horas_academicas?: number;
+  grupo_id?: number;
   nombre_grupo: string;
+  fecha_inicio?: string;
+  fecha_fin?: string;
+  modalidad_nombre?: string;
 }
 
 export interface CertificadoPublico {
@@ -184,26 +234,35 @@ export interface Firma {
 }
 
 // ── Config certificado ────────────────────────────────────────────────────────
+export interface ConfigLogoItem {
+  id:          number;
+  imagen_logo: string;
+  nombre:      string | null;
+  orden:       number;
+}
+
+export interface ConfigFirmaItem {
+  id:               number;
+  nombre_autoridad: string;
+  cargo:            string;
+  imagen_firma:     string;
+  orden:            number;
+}
+
 export interface ConfigCertificado {
-  empresa_id: number;
-  programa_id: number;
-  plantilla_url: string;
-  firma_1_id: number | null;
-  firma_2_id: number | null;
-  logo_id: number | null;
-  logo_imagen?: string | null;
-  logo_nombre?: string | null;
-  firma_1_nombre?: string | null;
-  firma_1_cargo?: string | null;
-  firma_1_imagen?: string | null;
-  firma_2_nombre?: string | null;
-  firma_2_cargo?: string | null;
-  firma_2_imagen?: string | null;
+  empresa_id:          number;
+  programa_id:         number;
+  plantilla_url:       string | null;
+  texto_personalizado: string | null;
+  logos:               ConfigLogoItem[];
+  firmas:              ConfigFirmaItem[];
 }
 
 export interface UpsertConfigDto {
-  plantilla_url: string;
-  firma_1_id?: number | null;
-  firma_2_id?: number | null;
-  logo_id?: number | null;
+  plantilla_url?:       string | null;
+  texto_personalizado?: string | null;
+  logo_ids?:  number[];
+  firma_ids?: number[];
+  /** 0 = config del programa (default). >0 = config específica de un grupo */
+  grupo_id?: number;
 }

@@ -14,7 +14,8 @@ import {
   ArrowLeft
 } from '@/components/ui/icon';
 import { TENANT_CONFIG } from '../../shared/constants';
-import { Header } from '../../shared/components';
+import { Header, Pagination } from '../../shared/components';
+import { usePagination } from '../../shared/hooks/usePagination';
 import { getHeaderConfig } from '../../shared/utils/config';
 import PageTransition from '@/components/shared/PageTransition';
 
@@ -80,8 +81,15 @@ export default function HistorialLotes({ tenantId, tenant }: HistorialLotesProps
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [lotes, setLotes] = useState<Lote[]>([]);
   const [descargandoZip, setDescargandoZip] = useState<number | null>(null);
-  const [page, setPage] = useState(1);
-  const lotesPerPage = 10;
+  const {
+    page,
+    setPage,
+    totalPages,
+    pageItems: lotesPaginados,
+    startIndex,
+    endIndex,
+    total: totalLotes,
+  } = usePagination(lotes, 10);
 
   useEffect(() => {
     // Verificar autenticación
@@ -151,10 +159,6 @@ export default function HistorialLotes({ tenantId, tenant }: HistorialLotesProps
   if (!usuario) {
     return null;
   }
-
-  const totalPages = Math.ceil(lotes.length / lotesPerPage);
-  const startIndex = (page - 1) * lotesPerPage;
-  const lotesPaginados = lotes.slice(startIndex, startIndex + lotesPerPage);
 
   return (
     <div className="min-h-screen bg-white">
@@ -298,30 +302,18 @@ export default function HistorialLotes({ tenantId, tenant }: HistorialLotesProps
         )}
 
         {/* Paginación */}
-        {totalPages > 1 && (
-          <div className="mt-8 flex justify-center items-center gap-2">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
-            >
-              Anterior
-            </button>
-            <span
-              className="px-4 py-2 text-white rounded-lg text-sm font-medium"
-              style={{ backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }}
-            >
-              {page} / {totalPages}
-            </span>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
-            >
-              Siguiente
-            </button>
-          </div>
-        )}
+        <div className="mt-8">
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onChange={setPage}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            total={totalLotes}
+            itemLabel="lotes"
+            accentColor={TENANT_CONFIG.PRIMARY_COLOR}
+          />
+        </div>
         </div>
       </PageTransition>
     </div>

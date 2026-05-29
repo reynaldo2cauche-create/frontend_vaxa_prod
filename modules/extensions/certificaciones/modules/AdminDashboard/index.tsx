@@ -1,169 +1,384 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Users, FileBadge, BookOpen, Layers, GraduationCap, ArrowRight } from '@/components/ui/icon';
-import { useProgramas } from '../../shared/hooks/useProgramas';
-import { useGrupos } from '../../shared/hooks/useGrupos';
+import { Users, FileBadge, BookOpen, Layers, GraduationCap, ChevronRight, TrendingUp } from '@/components/ui/icon';
+import { authStorage }      from '@/lib/auth';
+import { useProgramas }     from '../../shared/hooks/useProgramas';
+import { useGrupos }        from '../../shared/hooks/useGrupos';
 import { useInscripciones } from '../../shared/hooks/useInscripciones';
-import { useCertificados } from '../../shared/hooks/useCertificados';
+import { useCertificados }  from '../../shared/hooks/useCertificados';
 
-const ESTADOS_INSCRIPCION = [
-  { estadoId: 1, label: 'Inscritos',    color: 'bg-blue-50 text-blue-700' },
-  { estadoId: 2, label: 'En curso',     color: 'bg-amber-50 text-amber-700' },
-  { estadoId: 3, label: 'Aprobados',    color: 'bg-emerald-50 text-emerald-700' },
-  { estadoId: 4, label: 'Desaprobados', color: 'bg-red-50 text-red-600' },
-  { estadoId: 5, label: 'Retirados',    color: 'bg-gray-100 text-gray-500' },
-  { estadoId: 6, label: 'Rechazados',   color: 'bg-orange-50 text-orange-700' },
+/* ── Estado config ──────────────────────────────────────────── */
+const ESTADOS = [
+  { id: 1, label: 'Inscritos',    color: '#3B82F6' },
+  { id: 2, label: 'En curso',     color: '#F59E0B' },
+  { id: 3, label: 'Aprobados',    color: '#10B981' },
+  { id: 4, label: 'Desaprobados', color: '#EF4444' },
+  { id: 5, label: 'Retirados',    color: '#94A3B8' },
+  { id: 6, label: 'Rechazados',   color: '#F97316' },
 ];
 
+/* ── Stat card con fondo de color ───────────────────────────── */
 interface StatCardProps {
   icon: React.ReactNode;
   label: string;
-  value: number | string;
+  value: number;
+  cardBg: string;
+  cardBorder: string;
   iconBg: string;
-  href?: string;
+  numColor: string;
   onClick?: () => void;
+  dark?: boolean;
+  sub?: string;
 }
 
-function StatCard({ icon, label, value, iconBg, onClick }: StatCardProps) {
+function StatCard({
+  icon, label, value, cardBg, cardBorder, iconBg, numColor, onClick, dark, sub,
+}: StatCardProps) {
   return (
     <button
       onClick={onClick}
-      className="group bg-white rounded-2xl border border-black/[0.06] shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] p-5 text-left hover:shadow-[0_6px_20px_0_rgba(0,0,0,0.08)] transition-all duration-200 hover:-translate-y-0.5 w-full">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+      className="group rounded-2xl p-5 text-left w-full transition-all duration-200 hover:-translate-y-1"
+      style={{
+        background: cardBg,
+        border: `1px solid ${cardBorder}`,
+        boxShadow: dark
+          ? '0 4px 20px rgba(0,0,0,0.18), 0 1px 4px rgba(0,0,0,0.12)'
+          : '0 1px 3px rgba(0,0,0,0.04)',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.boxShadow = dark
+          ? '0 8px 30px rgba(0,0,0,0.22), 0 2px 6px rgba(0,0,0,0.14)'
+          : '0 6px 20px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.boxShadow = dark
+          ? '0 4px 20px rgba(0,0,0,0.18), 0 1px 4px rgba(0,0,0,0.12)'
+          : '0 1px 3px rgba(0,0,0,0.04)';
+      }}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: iconBg }}
+        >
           {icon}
         </div>
-        <ArrowRight size={14} className="text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all mt-1" />
+        <ChevronRight
+          size={14}
+          className="opacity-0 group-hover:opacity-100 transition-opacity mt-0.5"
+          style={{ color: numColor }}
+        />
       </div>
-      <p className="text-[28px] font-bold text-gray-900 leading-none">{value}</p>
-      <p className="text-[13px] text-gray-500 mt-1.5">{label}</p>
+      <p
+        className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-1.5"
+        style={{ color: dark ? 'rgba(255,255,255,0.45)' : '#9CA3AF' }}
+      >
+        {label}
+      </p>
+      <p
+        className="text-[34px] font-bold leading-none tracking-tight"
+        style={{ color: numColor }}
+      >
+        {value}
+      </p>
+      {sub && (
+        <p
+          className="text-[12px] mt-2 flex items-center gap-1"
+          style={{ color: dark ? 'rgba(255,255,255,0.35)' : '#9CA3AF' }}
+        >
+          <TrendingUp size={12} />
+          {sub}
+        </p>
+      )}
     </button>
   );
 }
 
+/* ── Bar chart inline ───────────────────────────────────────── */
+interface BarChartProps {
+  data: { id: number; label: string; color: string; count: number }[];
+}
+
+function BarChart({ data }: BarChartProps) {
+  const maxCount = Math.max(...data.map(d => d.count), 1);
+  const CHART_H  = 96; // px
+
+  return (
+    <div>
+      {/* Bars */}
+      <div className="flex items-end gap-2 mb-2" style={{ height: `${CHART_H}px` }}>
+        {data.map(d => {
+          const h = d.count > 0 ? Math.max((d.count / maxCount) * CHART_H, 6) : 2;
+          return (
+            <div key={d.id} className="flex-1 flex flex-col items-center justify-end gap-1">
+              {d.count > 0 && (
+                <span className="text-[11px] font-bold tabular-nums" style={{ color: '#374151' }}>
+                  {d.count}
+                </span>
+              )}
+              <div
+                className="w-full rounded-t-lg vx-bar"
+                style={{
+                  height: `${h}px`,
+                  background: d.count > 0 ? d.color : '#EEECE6',
+                  opacity: 0.85,
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Labels */}
+      <div className="flex gap-2">
+        {data.map(d => (
+          <div key={d.id} className="flex-1 text-center">
+            <span className="text-[9px] leading-tight block truncate" style={{ color: '#9CA3AF' }}>
+              {d.label.split(' ')[0]}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Dashboard ─────────────────────────────────────────────── */
 export default function AdminDashboard() {
   const { empresa } = useParams<{ empresa: string }>();
-  const navigate = useNavigate();
-  const base = `/${empresa}/certificados/admin`;
+  const navigate    = useNavigate();
+  const base        = `/${empresa}/certificados/admin`;
 
-  const { programas } = useProgramas(empresa!);
-  const { grupos }    = useGrupos(empresa!);
+  const user = authStorage.getUser(empresa!);
+
+  const { programas }     = useProgramas(empresa!);
+  const { grupos }        = useGrupos(empresa!);
   const { inscripciones } = useInscripciones(empresa!);
   const { certificados }  = useCertificados(empresa!);
 
-  const aprobados = inscripciones.filter(i => i.estado_id === 3).length;
-  const emitidos  = certificados.filter(c => c.estado_id === 1).length;
+  const aprobados  = inscripciones.filter(i => i.estado_id === 3).length;
+  const emitidos   = certificados.filter(c => c.estado_id === 1).length;
   const pendientes = aprobados - emitidos;
+  const totalInsc  = inscripciones.length;
+  const activeGrps = grupos.filter(g => g.activo).length;
+
+  const hora     = new Date().getHours();
+  const saludo   = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
+  const nombreWelcome = user ? user.nombres : (empresa ?? 'Admin');
+
+  const estadosData = ESTADOS.map(e => ({
+    ...e,
+    count: inscripciones.filter(i => i.estado_id === e.id).length,
+  }));
 
   return (
     <div className="space-y-6 page-enter">
-      <div>
-        <p className="text-[12px] font-semibold text-indigo-500 uppercase tracking-widest mb-1">Panel de control</p>
-        <h1 className="text-[22px] font-semibold tracking-tight text-gray-950 capitalize">{empresa}</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Resumen del sistema de certificados</p>
+
+      {/* ── Greeting ─────────────────────────────────────────── */}
+      <div className="stagger-1 page-enter">
+        <p className="text-[13px] font-medium mb-0.5" style={{ color: '#B0A898' }}>
+          {saludo}, {nombreWelcome} 👋
+        </p>
+        <h2 className="text-[24px] font-bold tracking-tight" style={{ color: '#0D0E12' }}>
+          Bienvenido al panel de certificados
+        </h2>
+        <p className="text-[13px] mt-1" style={{ color: '#9CA3AF' }}>
+          Aquí tienes el resumen de tu sistema
+        </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 stagger-1 page-enter">
+      {/* ── 4 Stat cards ─────────────────────────────────────── */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 stagger-2 page-enter">
+        {/* Certificados emitidos — featured dark */}
         <StatCard
-          icon={<BookOpen size={18} className="text-indigo-600" />}
-          label="Programas" value={programas.length}
-          iconBg="bg-indigo-50"
-          onClick={() => navigate(`${base}/programas`)}
-        />
-        <StatCard
-          icon={<Layers size={18} className="text-violet-600" />}
-          label="Grupos" value={grupos.length}
-          iconBg="bg-violet-50"
-          onClick={() => navigate(`${base}/grupos`)}
-        />
-        <StatCard
-          icon={<Users size={18} className="text-sky-600" />}
-          label="Inscritos" value={inscripciones.length}
-          iconBg="bg-sky-50"
-          onClick={() => navigate(`${base}/inscripciones`)}
-        />
-        <StatCard
-          icon={<FileBadge size={18} className="text-emerald-600" />}
-          label="Certificados emitidos" value={emitidos}
-          iconBg="bg-emerald-50"
+          icon={<FileBadge size={18} style={{ color: '#D97706' }} />}
+          label="Certificados emitidos"
+          value={emitidos}
+          cardBg="#0D0E12"
+          cardBorder="#1a1c23"
+          iconBg="rgba(217,119,6,0.18)"
+          numColor="#D97706"
+          dark
+          sub={pendientes > 0 ? `${pendientes} pendientes` : 'Al día'}
           onClick={() => navigate(`${base}/certificados`)}
         />
+
+        {/* Programas — violet */}
+        <StatCard
+          icon={<BookOpen size={18} style={{ color: '#7C3AED' }} />}
+          label="Programas"
+          value={programas.length}
+          cardBg="#F5F3FF"
+          cardBorder="#DDD6FE"
+          iconBg="#EDE9FE"
+          numColor="#5B21B6"
+          onClick={() => navigate(`${base}/programas`)}
+        />
+
+        {/* Inscritos — blue */}
+        <StatCard
+          icon={<Users size={18} style={{ color: '#2563EB' }} />}
+          label="Inscritos"
+          value={totalInsc}
+          cardBg="#EFF6FF"
+          cardBorder="#BFDBFE"
+          iconBg="#DBEAFE"
+          numColor="#1D4ED8"
+          onClick={() => navigate(`${base}/inscripciones`)}
+        />
+
+        {/* Grupos — green */}
+        <StatCard
+          icon={<Layers size={18} style={{ color: '#059669' }} />}
+          label="Grupos activos"
+          value={activeGrps}
+          cardBg="#F0FDF4"
+          cardBorder="#BBF7D0"
+          iconBg="#DCFCE7"
+          numColor="#15803D"
+          onClick={() => navigate(`${base}/grupos`)}
+        />
       </div>
 
-      {/* Alerta de pendientes */}
+      {/* ── Alerta pendientes ─────────────────────────────────── */}
       {pendientes > 0 && (
         <button
           onClick={() => navigate(`${base}/certificados`)}
-          className="group w-full bg-white border border-amber-200 rounded-2xl px-5 py-4 flex items-center justify-between hover:border-amber-400 hover:shadow-[0_4px_12px_0_rgba(245,158,11,0.15)] transition-all duration-200 stagger-2 page-enter">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-              <GraduationCap size={17} className="text-amber-600" />
+          className="group w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-200 stagger-3 page-enter hover:-translate-y-0.5"
+          style={{
+            background: '#FFFBEB',
+            border: '1px solid #FDE68A',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+          }}
+        >
+          <div className="flex items-center gap-3.5">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: '#FEF3C7' }}
+            >
+              <GraduationCap size={18} style={{ color: '#D97706' }} />
             </div>
             <div className="text-left">
-              <p className="text-[14px] font-semibold text-gray-900">
+              <p className="text-[14px] font-semibold" style={{ color: '#92400E' }}>
                 {pendientes} alumno{pendientes !== 1 ? 's' : ''} aprobado{pendientes !== 1 ? 's' : ''} sin certificado
               </p>
-              <p className="text-[12px] text-gray-500">Ir a certificados para emitirlos</p>
+              <p className="text-[12px]" style={{ color: '#B45309' }}>
+                Ir a certificados → emitir
+              </p>
             </div>
           </div>
-          <ArrowRight size={16} className="text-amber-500 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+          <ChevronRight
+            size={16}
+            className="transition-transform group-hover:translate-x-0.5 flex-shrink-0"
+            style={{ color: '#D97706' }}
+          />
         </button>
       )}
 
-      {/* Distribución de estados */}
-      <div className="bg-white rounded-2xl border border-black/[0.06] shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] p-5 stagger-3 page-enter">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[14px] font-semibold text-gray-900">Estado de inscripciones</p>
-          <span className="text-[12px] text-gray-400">{inscripciones.length} total</span>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {ESTADOS_INSCRIPCION.map(({ estadoId, label, color }) => {
-            const count = inscripciones.filter(i => i.estado_id === estadoId).length;
-            const pct = inscripciones.length > 0 ? Math.round((count / inscripciones.length) * 100) : 0;
-            return (
-              <div key={estadoId}
-                className={`rounded-xl px-3.5 py-2.5 flex items-center justify-between ${color}`}>
-                <div>
-                  <p className="text-[11px] font-medium opacity-80">{label}</p>
-                  <p className="text-[18px] font-bold leading-tight">{count}</p>
-                </div>
-                <span className="text-[11px] font-semibold opacity-60">{pct}%</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* ── Row: Bar chart + Grupos ───────────────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 stagger-4 page-enter">
 
-      {/* Grupos recientes */}
-      {grupos.length > 0 && (
-        <div className="bg-white rounded-2xl border border-black/[0.06] shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden stagger-4 page-enter">
-          <div className="px-5 py-3.5 border-b border-gray-50 flex items-center justify-between">
-            <p className="text-[14px] font-semibold text-gray-900">Grupos activos</p>
-            <button onClick={() => navigate(`${base}/grupos`)}
-              className="text-[12px] text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 transition-colors">
-              Ver todos <ArrowRight size={12} />
+        {/* Bar chart */}
+        <div
+          className="xl:col-span-3 bg-white rounded-2xl p-5"
+          style={{ border: '1px solid #EEECE6' }}
+        >
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <p className="text-[15px] font-bold" style={{ color: '#0D0E12' }}>
+                Inscripciones por estado
+              </p>
+              <p className="text-[12px] mt-0.5" style={{ color: '#9CA3AF' }}>
+                {totalInsc} inscritos en total
+              </p>
+            </div>
+            <span
+              className="px-2.5 py-1 rounded-full text-[11px] font-semibold"
+              style={{ background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0' }}
+            >
+              {aprobados} aprobados
+            </span>
+          </div>
+
+          {totalInsc === 0 ? (
+            <div className="py-10 text-center" style={{ color: '#C8C3BB' }}>
+              <p className="text-[13px]">Sin inscripciones todavía</p>
+            </div>
+          ) : (
+            <BarChart data={estadosData} />
+          )}
+
+          {/* Legend */}
+          {totalInsc > 0 && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-4 pt-4" style={{ borderTop: '1px solid #F0EEE9' }}>
+              {estadosData.filter(d => d.count > 0).map(d => (
+                <div key={d.id} className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full" style={{ background: d.color }} />
+                  <span className="text-[11px]" style={{ color: '#64748B' }}>{d.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Grupos tabla compacta */}
+        <div
+          className="xl:col-span-2 bg-white rounded-2xl overflow-hidden"
+          style={{ border: '1px solid #EEECE6' }}
+        >
+          <div
+            className="flex items-center justify-between px-5 py-4"
+            style={{ borderBottom: '1px solid #F5F4F0' }}
+          >
+            <p className="text-[15px] font-bold" style={{ color: '#0D0E12' }}>
+              Grupos activos
+            </p>
+            <button
+              onClick={() => navigate(`${base}/grupos`)}
+              className="text-[12px] font-semibold flex items-center gap-0.5 transition-opacity hover:opacity-70"
+              style={{ color: '#D97706' }}
+            >
+              Ver todos <ChevronRight size={12} />
             </button>
           </div>
-          <div className="divide-y divide-gray-50">
-            {grupos.filter(g => g.activo).slice(0, 4).map(g => (
-              <button key={g.id}
-                onClick={() => navigate(`${base}/inscripciones?grupo=${g.id}&nombre=${encodeURIComponent(g.nombre_grupo)}`)}
-                className="w-full px-5 py-3 flex items-center justify-between hover:bg-gray-50/80 transition-colors group text-left">
-                <div>
-                  <p className="text-[13px] font-medium text-gray-800">{g.nombre_grupo}</p>
-                  <p className="text-[11px] text-gray-400">{g.programa_nombre} · {g.modalidad_nombre}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[12px] text-gray-400">
-                    {inscripciones.filter(i => i.grupo_id === g.id).length} inscritos
+
+          {grupos.filter(g => g.activo).length === 0 ? (
+            <div className="px-5 py-10 text-center" style={{ color: '#C8C3BB' }}>
+              <p className="text-[13px]">Sin grupos activos</p>
+            </div>
+          ) : (
+            grupos.filter(g => g.activo).slice(0, 6).map((g, i, arr) => {
+              const count = inscripciones.filter(i => i.grupo_id === g.id).length;
+              return (
+                <button
+                  key={g.id}
+                  onClick={() =>
+                    navigate(`${base}/inscripciones?grupo=${g.id}&nombre=${encodeURIComponent(g.nombre_grupo)}`)
+                  }
+                  className="w-full flex items-center justify-between px-5 py-3.5 transition-colors group"
+                  style={{ borderBottom: i < arr.length - 1 ? '1px solid #F5F4F0' : undefined }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#FAFAF8')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <div className="text-left min-w-0">
+                    <p className="text-[13px] font-semibold truncate" style={{ color: '#0D0E12' }}>
+                      {g.nombre_grupo}
+                    </p>
+                    <p className="text-[11px] truncate mt-0.5" style={{ color: '#9CA3AF' }}>
+                      {g.programa_nombre}
+                    </p>
+                  </div>
+                  <span
+                    className="flex-shrink-0 ml-3 text-[12px] font-bold px-2.5 py-1 rounded-full tabular-nums"
+                    style={{ background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' }}
+                  >
+                    {count}
                   </span>
-                  <ArrowRight size={13} className="text-gray-300 group-hover:text-indigo-400 transition-colors" />
-                </div>
-              </button>
-            ))}
-          </div>
+                </button>
+              );
+            })
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

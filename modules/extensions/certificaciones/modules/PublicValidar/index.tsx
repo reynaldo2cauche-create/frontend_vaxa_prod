@@ -1,47 +1,63 @@
 import { useState, FormEvent } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { QrCode, Search, Loader2, CheckCircle, XCircle, BadgeCheck } from '@/components/ui/icon';
+import { QrCode, Search, Loader2, BadgeCheck, XCircle } from '@/components/ui/icon';
 import { useValidarCertificado } from '../../shared/hooks/useCertificados';
 
-function formatDate(d: string) {
-  return new Date(d + 'T00:00:00').toLocaleDateString('es-PE', {
-    day: 'numeric', month: 'long', year: 'numeric',
-  });
+function formatDate(d: string | Date) {
+  if (!d) return '—';
+  const s = typeof d === 'string' ? d.substring(0, 10) : d.toISOString().substring(0, 10);
+  return new Date(s + 'T12:00:00').toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-2.5" style={{ borderBottom: '1px solid #F5F4F0' }}>
+      <span className="text-[12px] flex-shrink-0" style={{ color: '#9CA3AF' }}>{label}</span>
+      <span className="text-[13px] font-semibold text-right" style={{ color: '#0D0E12' }}>{value}</span>
+    </div>
+  );
 }
 
 export default function PublicValidar() {
-  const { empresa } = useParams<{ empresa: string }>();
-  const [searchParams] = useSearchParams();
+  const { empresa }      = useParams<{ empresa: string }>();
+  const [searchParams]   = useSearchParams();
   const { resultado, loading, error, buscado, validar } = useValidarCertificado();
   const [codigo, setCodigo] = useState(searchParams.get('codigo') ?? '');
 
-  // Valida automáticamente si viene el código por URL
   useState(() => {
     const c = searchParams.get('codigo');
     if (c) validar(c);
   });
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    validar(codigo);
-  };
+  const handleSubmit = (e: FormEvent) => { e.preventDefault(); validar(codigo); };
+
+  const valid = resultado && (resultado.estado === 'EMITIDO' || resultado.estado === 'VIGENTE');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white py-10 px-4">
+    <div className="min-h-screen py-10 px-4" style={{ background: '#F5F4F0' }}>
       <div className="w-full max-w-lg mx-auto">
+
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600 shadow-lg mb-4">
-            <QrCode size={28} className="text-white" />
+          <div
+            className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
+            style={{ background: '#FEF3C7', border: '1px solid #FDE68A' }}
+          >
+            <QrCode size={26} style={{ color: '#D97706' }} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Verificar certificado</h1>
-          <p className="text-sm text-gray-500 mt-1 capitalize">{empresa}</p>
+          <h1 className="text-[26px] font-bold tracking-tight" style={{ color: '#0D0E12' }}>
+            Verificar certificado
+          </h1>
+          <p className="text-[14px] mt-1 capitalize" style={{ color: '#9CA3AF' }}>{empresa}</p>
         </div>
 
-        {/* Formulario de búsqueda */}
-        <form onSubmit={handleSubmit}
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-5">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        {/* Búsqueda */}
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-2xl p-5 mb-5"
+          style={{ background: '#FFFFFF', border: '1px solid #EEECE6', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
+        >
+          <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#374151' }}>
             Código único del certificado
           </label>
           <div className="flex gap-2">
@@ -50,11 +66,15 @@ export default function PublicValidar() {
               value={codigo}
               onChange={e => setCodigo(e.target.value.toUpperCase())}
               placeholder="CERT-1-1748..."
-              className="flex-1 px-3 py-2.5 text-sm font-mono border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase"
+              className="vx-input flex-1 font-mono"
+              style={{ textTransform: 'uppercase' }}
             />
-            <button type="submit" disabled={loading || !codigo.trim()}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-medium rounded-lg transition-colors">
-              {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+            <button
+              type="submit"
+              disabled={loading || !codigo.trim()}
+              className="vx-btn vx-btn-primary px-4 flex-shrink-0"
+            >
+              {loading ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
               Verificar
             </button>
           </div>
@@ -63,82 +83,76 @@ export default function PublicValidar() {
         {/* Resultado */}
         {buscado && !loading && (
           <>
+            {/* No encontrado */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-                <XCircle size={40} className="text-red-400 mx-auto mb-3" />
-                <p className="font-semibold text-gray-900 mb-1">Certificado no encontrado</p>
-                <p className="text-sm text-gray-500">{error}</p>
+              <div
+                className="rounded-2xl p-8 text-center page-enter"
+                style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}
+              >
+                <XCircle size={40} style={{ color: '#FCA5A5', margin: '0 auto 12px' }} />
+                <p className="text-[15px] font-bold mb-1" style={{ color: '#0D0E12' }}>Certificado no encontrado</p>
+                <p className="text-[13px]" style={{ color: '#9CA3AF' }}>{error}</p>
               </div>
             )}
 
+            {/* Encontrado */}
             {resultado && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                {/* Estado */}
-                <div className={`px-5 py-3 flex items-center gap-2 ${
-                  resultado.estado === 'EMITIDO' || resultado.estado === 'VIGENTE'
-                    ? 'bg-green-50 border-b border-green-100'
-                    : 'bg-red-50 border-b border-red-100'
-                }`}>
-                  {resultado.estado === 'EMITIDO' || resultado.estado === 'VIGENTE' ? (
-                    <BadgeCheck size={18} className="text-green-600" />
-                  ) : (
-                    <XCircle size={18} className="text-red-500" />
-                  )}
-                  <span className="text-sm font-semibold text-gray-800">
-                    {resultado.estado === 'EMITIDO' || resultado.estado === 'VIGENTE'
-                      ? 'Certificado válido y auténtico'
-                      : `Certificado ${resultado.estado.toLowerCase()}`}
+              <div
+                className="rounded-2xl overflow-hidden page-enter"
+                style={{ background: '#FFFFFF', border: `1px solid ${valid ? '#BBF7D0' : '#FECACA'}` }}
+              >
+                {/* Banner estado */}
+                <div
+                  className="px-5 py-3.5 flex items-center gap-2.5"
+                  style={{
+                    background: valid ? '#F0FDF4' : '#FEF2F2',
+                    borderBottom: `1px solid ${valid ? '#BBF7D0' : '#FECACA'}`,
+                  }}
+                >
+                  {valid
+                    ? <BadgeCheck size={18} style={{ color: '#15803D' }} />
+                    : <XCircle    size={18} style={{ color: '#B91C1C' }} />
+                  }
+                  <span className="text-[14px] font-bold" style={{ color: valid ? '#15803D' : '#B91C1C' }}>
+                    {valid ? 'Certificado válido y auténtico' : `Certificado ${resultado.estado.toLowerCase()}`}
                   </span>
                 </div>
 
                 <div className="p-5 space-y-4">
                   {/* Participante */}
                   <div>
-                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Participante</p>
-                    <p className="text-xl font-bold text-gray-900">{resultado.participante_nombre}</p>
-                    <p className="text-sm text-gray-500">{resultado.tipo_doc}: {resultado.numero_documento}</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: '#B0A898' }}>
+                      Participante
+                    </p>
+                    <p className="text-[22px] font-bold tracking-tight" style={{ color: '#0D0E12' }}>
+                      {resultado.participante_nombre}
+                    </p>
+                    <p className="text-[13px] mt-0.5" style={{ color: '#9CA3AF' }}>
+                      {resultado.tipo_doc}: {resultado.numero_documento}
+                    </p>
                   </div>
 
-                  {/* Programa */}
-                  <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Programa</span>
-                      <span className="font-medium text-gray-900">{resultado.programa_nombre}</span>
+                  {/* Detalles */}
+                  <div
+                    className="rounded-xl px-4 py-1"
+                    style={{ background: '#FAFAF8', border: '1px solid #EEECE6' }}
+                  >
+                    <Row label="Programa"  value={resultado.programa_nombre} />
+                    <Row label="Grupo"     value={resultado.nombre_grupo} />
+                    <Row label="Modalidad" value={resultado.modalidad} />
+                    <Row label="Duración"  value={`${resultado.horas_academicas} horas académicas`} />
+                    <Row label="Periodo"   value={`${formatDate(resultado.fecha_inicio)} — ${formatDate(resultado.fecha_fin)}`} />
+                    <Row label="Emitido por" value={resultado.empresa_nombre} />
+                    <div className="flex items-start justify-between gap-4 py-2.5">
+                      <span className="text-[12px] flex-shrink-0" style={{ color: '#9CA3AF' }}>Fecha de emisión</span>
+                      <span className="text-[13px] font-semibold text-right" style={{ color: '#0D0E12' }}>{formatDate(resultado.fecha_emision)}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Grupo</span>
-                      <span className="font-medium text-gray-900">{resultado.nombre_grupo}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Modalidad</span>
-                      <span className="font-medium text-gray-900">{resultado.modalidad}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Duración</span>
-                      <span className="font-medium text-gray-900">{resultado.horas_academicas} horas</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Periodo</span>
-                      <span className="font-medium text-gray-900">
-                        {formatDate(resultado.fecha_inicio)} — {formatDate(resultado.fecha_fin)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Emisor */}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Emitido por</span>
-                    <span className="font-medium text-gray-900">{resultado.empresa_nombre}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Fecha de emisión</span>
-                    <span className="font-medium text-gray-900">{formatDate(resultado.fecha_emision)}</span>
                   </div>
 
                   {/* Código */}
-                  <div className="border-t border-gray-100 pt-3">
-                    <p className="text-xs text-gray-400">Código único</p>
-                    <p className="text-xs font-mono text-gray-600 break-all">{resultado.codigo_unico}</p>
+                  <div className="rounded-xl px-4 py-3" style={{ background: '#F5F4F0' }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: '#B0A898' }}>Código único</p>
+                    <p className="text-[12px] font-mono break-all" style={{ color: '#374151' }}>{resultado.codigo_unico}</p>
                   </div>
                 </div>
               </div>
@@ -146,8 +160,12 @@ export default function PublicValidar() {
           </>
         )}
 
-        <p className="text-center text-xs text-gray-400 mt-6">
-          <a href={`/${empresa}/certificados`} className="hover:text-indigo-500">
+        <p className="text-center text-[12px] mt-6">
+          <a
+            href={`/${empresa}/certificados`}
+            className="font-semibold transition-opacity hover:opacity-70"
+            style={{ color: '#D97706' }}
+          >
             ← Inscripción al programa
           </a>
         </p>

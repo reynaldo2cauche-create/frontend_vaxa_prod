@@ -1,17 +1,33 @@
 import { api } from '@/lib/api/client';
 import { authStorage } from '@/lib/auth';
-import type { Inscripcion, CreateInscripcionDto, RegistroPublicoDto } from '../types';
+import type { Inscripcion, CreateInscripcionDto, RegistroPublicoDto, Participante } from '../types';
 
 const opts = (empresa: string) => ({
   tenantId: empresa,
   token: authStorage.getToken(empresa) ?? undefined,
 });
 
+export interface InscribirDto {
+  tipo_documento_id: number;
+  numero_documento: string;
+  nombres: string;
+  apellidos: string;
+  email?: string;
+  telefono?: string;
+  grupo_id: number;
+}
+
 export const inscripcionesApi = {
   list: (empresa: string, grupoId?: number) => {
     const qs = grupoId ? `?grupo_id=${grupoId}` : '';
     return api.get<Inscripcion[]>(`/api/certificados/inscripciones${qs}`, opts(empresa));
   },
+
+  /** Inscribe un alumno: reutiliza por documento o lo crea; valida duplicado en el programa. */
+  inscribir: (empresa: string, data: InscribirDto) =>
+    api.post<{ participante: Participante; inscripcion: Inscripcion }>(
+      '/api/certificados/inscripciones/inscribir', data, opts(empresa),
+    ),
 
   create: (empresa: string, data: CreateInscripcionDto) =>
     api.post<Inscripcion>('/api/certificados/inscripciones', data, opts(empresa)),

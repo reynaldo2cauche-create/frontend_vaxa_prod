@@ -12,6 +12,7 @@ import AdminDashboard     from '../modules/extensions/certificaciones/modules/Ad
 import AdminProgramas     from '../modules/extensions/certificaciones/modules/AdminProgramas';
 import AdminGrupos        from '../modules/extensions/certificaciones/modules/AdminGrupos';
 import AdminInscripciones from '../modules/extensions/certificaciones/modules/AdminInscripciones';
+import AdminEstudiantes   from '../modules/extensions/certificaciones/modules/AdminEstudiantes';
 import AdminCertificados  from '../modules/extensions/certificaciones/modules/AdminCertificados';
 import AdminConfig        from '../modules/extensions/certificaciones/modules/AdminConfig';
 import PublicRegistro from '../modules/extensions/certificaciones/modules/PublicRegistro';
@@ -40,6 +41,7 @@ export default function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="programas"     element={<AdminProgramas />} />
             <Route path="grupos"        element={<AdminGrupos />} />
+            <Route path="estudiantes"   element={<AdminEstudiantes />} />
             <Route path="inscripciones" element={<AdminInscripciones />} />
             <Route path="certificados"  element={<AdminCertificados />} />
             <Route path="config"        element={<AdminConfig />} />

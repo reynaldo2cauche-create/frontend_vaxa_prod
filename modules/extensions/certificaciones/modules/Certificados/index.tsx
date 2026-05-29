@@ -19,7 +19,8 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { TENANT_CONFIG } from '../../shared/constants';
-import { Header } from '../../shared/components';
+import { Header, Pagination } from '../../shared/components';
+import { usePagination } from '../../shared/hooks/usePagination';
 import { getHeaderConfig } from '../../shared/utils/config';
 import PageTransition from '@/components/shared/PageTransition';
 
@@ -114,8 +115,14 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
   const [sortField, setSortField] = useState<'nombre' | 'documento' | 'fecha'>('nombre');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const {
+    page: currentPage,
+    setPage: setCurrentPage,
+    totalPages,
+    pageItems: currentParticipantes,
+    startIndex,
+    endIndex,
+  } = usePagination(filteredParticipantes, 20);
 
   useEffect(() => {
     // Verificar autenticación
@@ -273,11 +280,6 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
   const stats = {
     total: participantes.length
   };
-
-  const totalPages = Math.ceil(filteredParticipantes.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentParticipantes = filteredParticipantes.slice(startIndex, endIndex);
 
   return (
     <div className="min-h-screen bg-white">
@@ -563,80 +565,18 @@ export default function CertificadosLote({ tenantId, tenant, loteId }: Certifica
         </div>
 
         {/* PAGINACIÓN */}
-        {totalPages > 1 && (
-          <div className="mt-6 bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="text-sm text-gray-600">
-                Mostrando <span className="font-medium text-gray-900">{startIndex + 1}</span> -{' '}
-                <span className="font-medium text-gray-900">{Math.min(endIndex, filteredParticipantes.length)}</span> de{' '}
-                <span className="font-medium text-gray-900">{filteredParticipantes.length}</span> participantes
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(1)}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  Primera
-                </button>
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  Anterior
-                </button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
-                          currentPage === pageNum
-                            ? 'text-white'
-                            : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                        }`}
-                        style={
-                          currentPage === pageNum
-                            ? { backgroundColor: TENANT_CONFIG.PRIMARY_COLOR }
-                            : undefined
-                        }
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  Siguiente
-                </button>
-                <button
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  Última
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <div className="mt-6">
+          <Pagination
+            page={currentPage}
+            totalPages={totalPages}
+            onChange={setCurrentPage}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            total={filteredParticipantes.length}
+            itemLabel="participantes"
+            accentColor={TENANT_CONFIG.PRIMARY_COLOR}
+          />
+        </div>
 
         {/* CONSEJOS */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">

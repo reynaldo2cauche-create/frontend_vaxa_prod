@@ -25,6 +25,13 @@ export const certificadosApi = {
       opts(empresa)
     ),
 
+  regenerarPDF: (empresa: string, id: number) =>
+    api.post<{ url: string }>(
+      `/api/certificados/emision/${id}/regenerar-pdf`,
+      undefined,
+      opts(empresa),
+    ),
+
   /** Endpoint público — no requiere token */
   validar: (codigo: string) =>
     api.get<CertificadoPublico>(`/public/certificado/${codigo}`),

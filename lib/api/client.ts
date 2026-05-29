@@ -36,9 +36,14 @@ export async function apiClient<T>(
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: response.statusText })) as { message?: string };
-    throw new ApiError(errorData.message ?? 'Error en la petición', response.status, errorData);
+    const errorData = await response.json().catch(() => ({})) as { message?: string; error?: string };
+    // El backend devuelve los errores como { error: "..." }; soportamos ambos por compatibilidad.
+    const msg = errorData.error ?? errorData.message ?? response.statusText ?? 'Error en la petición';
+    throw new ApiError(msg, response.status, errorData);
   }
+
+  // 204 No Content — no hay body que parsear
+  if (response.status === 204) return undefined as unknown as T;
 
   return response.json() as Promise<T>;
 }

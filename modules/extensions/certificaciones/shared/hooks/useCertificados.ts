@@ -29,9 +29,11 @@ export function useCertificados(empresa: string) {
   };
 
   const anular = async (id: number) => {
-    const cert = await certificadosApi.anular(empresa, id);
-    setCertificados(prev => prev.map(c => c.id === id ? cert : c));
-    return cert;
+    await certificadosApi.anular(empresa, id);
+    // El backend devuelve 204 sin body — actualizamos estado localmente
+    setCertificados(prev =>
+      prev.map(c => c.id === id ? { ...c, estado_id: 2, estado_nombre: 'Anulado' } : c)
+    );
   };
 
   return { certificados, loading, error, generar, anular, refetch: fetchAll };

@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/icon';
 import HeaderSistemasVaxa from '../../shared/components/HeaderSistemasVaxa';
 import { PLANES, VAXA_CONFIG } from '../../shared/constants';
+import { creditosAdminApi } from '../../shared/api/creditos.admin.api';
+import { AlertCircle } from '@/components/ui/icon';
 
 // Configuración específica del sistema de certificaciones
 const CERTIFICACIONES_CONFIG = {
@@ -37,6 +39,8 @@ interface Usuario {
 
 interface FormData {
   nombre: string;
+  slug: string;
+  dominio: string;
   ruc: string;
   email: string;
   telefono: string;
@@ -55,11 +59,14 @@ export default function RegistrarEmpresaCertificaciones({
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     nombre: '',
+    slug: '',
+    dominio: '',
     ruc: '',
     email: '',
     telefono: '',
@@ -118,15 +125,28 @@ export default function RegistrarEmpresaCertificaciones({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    // Aquí iría la lógica para subir el logo y crear la empresa
-    console.log('Datos del formulario:', formData);
-    console.log('Logo:', logoFile);
+    // El plan elegido define los créditos iniciales (límite de certificados del plan).
+    const plan = Object.values(PLANES).find((p) => p.id === formData.planId);
+    const creditosIniciales = plan && plan.certificadosMax > 0 ? plan.certificadosMax : 0;
 
-    setTimeout(() => {
+    try {
+      // El backend tiene columnas razon_social, ruc, tenant_slug. El resto de
+      // campos (teléfono, dirección, contacto, logo) aún no se persisten.
+      const empresa = await creditosAdminApi.crearEmpresa({
+        razon_social: formData.nombre,
+        tenant_slug: formData.slug || undefined,   // si vacío, el backend lo genera del nombre
+        dominio: formData.dominio || undefined,
+        ruc: formData.ruc || undefined,
+        logo: logoPreview || undefined,            // data URL base64 del logo subido
+        creditos_iniciales: creditosIniciales,
+      });
+      navigate(`/${tenantId}/certificaciones/empresa/${empresa.id}`);
+    } catch (err) {
+      setError((err as Error).message);
       setLoading(false);
-      navigate(`/${tenantId}/certificaciones/empresas`);
-    }, 1500);
+    }
   };
 
   if (!usuario) {
@@ -237,6 +257,38 @@ export default function RegistrarEmpresaCertificaciones({
                   onChange={handleChange}
                   required
                   placeholder="Instituto TechPro Capacitaciones"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Identificador / Slug (URL)
+                </label>
+                <input
+                  type="text"
+                  name="slug"
+                  value={formData.slug}
+                  onChange={handleChange}
+                  placeholder="techpro"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                />
+                <p className="text-xs text-gray-500 mt-1.5">
+                  Portal: <code className="text-emerald-600">/{formData.slug || '<se-genera-del-nombre>'}/certificados</code>
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-gray-500" />
+                  Dominio (opcional)
+                </label>
+                <input
+                  type="text"
+                  name="dominio"
+                  value={formData.dominio}
+                  onChange={handleChange}
+                  placeholder="techpro.edu.pe"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                 />
               </div>
@@ -423,6 +475,13 @@ export default function RegistrarEmpresaCertificaciones({
               ))}
             </div>
           </div>
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
 
           {/* Botones */}
           <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">

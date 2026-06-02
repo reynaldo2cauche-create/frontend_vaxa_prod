@@ -19,8 +19,10 @@ import {
 } from '@/components/ui/icon';
 import {
   getCertificadoByCodigo,
-  type Certificado,
 } from '../../shared/data/mockData';
+
+// Tipo local para este módulo legacy
+type Certificado = ReturnType<typeof getCertificadoByCodigo>;
 import PageTransition from '@/components/shared/PageTransition';
 
 const VAXA_CONFIG = {
@@ -460,7 +462,7 @@ export default function Validacion({ tenantId, tenant }: ValidacionProps) {
       </div>
 
       {/* Estilos */}
-      <style jsx>{`
+      <style>{`
         @keyframes blob {
           0%, 100% { transform: translate(0, 0) scale(1); }
           33% { transform: translate(30px, -50px) scale(1.1); }

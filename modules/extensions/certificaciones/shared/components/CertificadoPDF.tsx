@@ -1,0 +1,427 @@
+import { useRef, useEffect, useState } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
+import { Download, X } from '@/components/ui/icon';
+import type { Certificado, ConfigCertificado } from '../types';
+
+interface Props {
+  certificado: Certificado & { empresa_nombre: string };
+  config: ConfigCertificado;
+  onClose: () => void;
+}
+
+/* ── Dimensiones (mismo viewport que el otro proyecto) ──────── */
+const W = 1122;
+const H = 794;
+
+/* ── Helpers ────────────────────────────────────────────────── */
+function fmtDate(d: string | Date | undefined | null) {
+  if (!d) return '';
+  const s = typeof d === 'string' ? d.substring(0, 10) : d.toISOString().substring(0, 10);
+  if (!s || s === '0000-00-00') return '';
+  return new Date(s + 'T12:00:00').toLocaleDateString('es-PE', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  });
+}
+
+/* Layout de logos:
+   - 1 logo  → centro
+   - 2 logos → izquierda y derecha
+   - 3 logos → izquierda, centro y derecha                       */
+function getLogoSlots(n: number): ('left' | 'center' | 'right')[] {
+  if (n === 1) return ['center'];
+  if (n === 2) return ['left', 'right'];
+  return ['left', 'center', 'right'];
+}
+
+/* Wrappers de logos: contenedor centrado 200x110, img dentro con aspect ratio respetado */
+function logoSlotStyle(slot: 'left' | 'center' | 'right'): React.CSSProperties {
+  const base: React.CSSProperties = {
+    position: 'absolute',
+    top: 60,
+    width: 200,
+    height: 110,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+  if (slot === 'left')   return { ...base, left: 80 };
+  if (slot === 'right')  return { ...base, right: 80 };
+  return { ...base, left: (W - 200) / 2 };
+}
+
+const logoImgStyle: React.CSSProperties = {
+  maxHeight: 100,
+  maxWidth: 180,
+  width: 'auto',
+  height: 'auto',
+  display: 'block',
+};
+
+/* Gap entre firmas según cantidad — mismo criterio del otro proyecto */
+function firmasGap(n: number): number {
+  if (n <= 1) return 0;
+  if (n === 2) return 120;
+  return 60;
+}
+
+const SIG_ITEM_W = 200;
+const SIG_IMG_H  = 55;
+
+/* ── Componente ─────────────────────────────────────────────── */
+export function CertificadoPDF({ certificado, config, onClose }: Props) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
+
+  const qrUrl = `${window.location.origin}/${certificado.empresa_nombre}/certificados/validar?codigo=${certificado.codigo_unico}`;
+
+  // Genera el QR localmente como data URL — evita CORS y queda igual en preview y PDF
+  useEffect(() => {
+    QRCode.toDataURL(qrUrl, { errorCorrectionLevel: 'M', width: 240, margin: 1 })
+      .then(setQrDataUrl)
+      .catch(() => setQrDataUrl(''));
+  }, [qrUrl]);
+
+  const handleDescargar = async () => {
+    if (!ref.current) return;
+
+    // 1. Quitar temporalmente cualquier transform del wrapper para que html2canvas
+    //    capture el certificado en su tamaño nativo 1122×794 sin deformación.
+    const wrapper = ref.current.parentElement as HTMLDivElement | null;
+    const originalTransform = wrapper?.style.transform ?? '';
+    if (wrapper) wrapper.style.transform = 'none';
+
+    try {
+      const canvas = await html2canvas(ref.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        letterRendering: true,
+      } as any);
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
+      pdf.save(`certificado-${certificado.codigo_unico}.pdf`);
+    } finally {
+      // 2. Restauramos el transform visual
+      if (wrapper) wrapper.style.transform = originalTransform;
+    }
+  };
+
+  // Texto del cuerpo
+  const fechaInicio = fmtDate(certificado.fecha_inicio);
+  const fechaFin    = fmtDate(certificado.fecha_fin);
+  const periodo     = fechaInicio && fechaFin ? `, realizado del ${fechaInicio} al ${fechaFin}` : '';
+  const cuerpoDefault = `Por haber completado satisfactoriamente ${
+    certificado.tipo_programa_nombre ?? 'el programa'
+  } "${certificado.programa_nombre}" con una duración de ${
+    certificado.horas_academicas ?? ''
+  } horas académicas${periodo}.`;
+  const cuerpoTexto = config.texto_personalizado?.trim() || cuerpoDefault;
+
+  // Tamaño cuerpo adaptativo (igual que el otro proyecto)
+  const esTextoLargo = cuerpoTexto.length > 200;
+  const cuerpoSize   = esTextoLargo ? 18 : 20;
+
+  // Logos
+  const slots = getLogoSlots(config.logos?.length ?? 0);
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 50,
+      display: 'flex', flexDirection: 'column',
+      background: 'rgba(0,0,0,0.85)',
+    }}>
+
+      {/* ── Toolbar ──────────────────────────────────────────── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '10px 20px', flexShrink: 0,
+        background: '#0D0E12', borderBottom: '1px solid rgba(255,255,255,0.08)',
+      }}>
+        <p style={{ margin: 0, color: '#F1F5F9', fontSize: 14, fontWeight: 600 }}>
+          {certificado.participante_nombre}
+        </p>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={handleDescargar}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '7px 14px', background: '#D97706', color: '#fff',
+              border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            <Download size={14} /> Descargar PDF
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '7px 10px', background: 'rgba(255,255,255,0.08)', color: '#9CA3AF',
+              border: 'none', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center',
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Scroll area ──────────────────────────────────────── */}
+      <div style={{
+        flex: 1, overflow: 'auto', padding: 24,
+        background: '#1a1c23',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      }}>
+        {/* Wrapper escalado SOLO para visualización.
+            Antes de descargar, el handler quita este transform temporalmente. */}
+        <div style={{
+          transform: 'scale(0.6)',
+          transformOrigin: 'top center',
+          marginBottom: -W * 0.4,
+          flexShrink: 0,
+        }}>
+
+          {/* ═══════════ CERTIFICADO 1122×794 ═══════════ */}
+          <div
+            ref={ref}
+            style={{
+              position: 'relative',
+              width: W,
+              height: H,
+              background: '#fff',
+              overflow: 'hidden',
+              fontFamily: 'Helvetica, Arial, sans-serif',
+            }}
+          >
+            {/* Fondo */}
+            {config.plantilla_url && (
+              <img
+                src={config.plantilla_url}
+                alt=""
+                style={{
+                  position: 'absolute', inset: 0,
+                  width: W, height: H, objectFit: 'cover',
+                }}
+              />
+            )}
+
+            {/* ── LOGOS (slot 200x110, img respeta aspect ratio) ── */}
+            {config.logos?.map((logo, i) => (
+              <div key={logo.id} style={logoSlotStyle(slots[i] ?? 'center')}>
+                <img
+                  src={logo.imagen_logo}
+                  alt={logo.nombre ?? 'logo'}
+                  style={logoImgStyle}
+                  crossOrigin="anonymous"
+                />
+              </div>
+            ))}
+
+            {/* ── CONTENIDO CENTRAL ────────────────────────── */}
+            <div style={{
+              position: 'absolute',
+              top: 160,
+              bottom: 180,
+              left: 180,
+              right: 180,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+            }}>
+              {/* Título (tipo de programa) */}
+              <p style={{
+                margin: 0,
+                fontSize: 32,
+                fontWeight: 700,
+                color: '#1a365d',
+                textTransform: 'uppercase',
+                wordSpacing: 'normal',
+              }}>
+                {certificado.tipo_programa_nombre ?? 'Certificado'}
+              </p>
+
+              {/* Nombre del participante */}
+              <p style={{
+                margin: '35px 0 0',
+                fontSize: 42,
+                fontWeight: 700,
+                color: '#0f172a',
+                lineHeight: 1.15,
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                whiteSpace: 'pre-wrap',
+              }}>
+                {certificado.participante_nombre}
+              </p>
+
+              {/* Cuerpo */}
+              <p style={{
+                margin: '35px 0 0',
+                fontSize: cuerpoSize,
+                color: '#475569',
+                lineHeight: 1.65,
+                maxWidth: 700,
+                whiteSpace: 'pre-wrap',
+              }}>
+                {cuerpoTexto}
+              </p>
+
+              {/* Nombre del programa */}
+              <p style={{
+                margin: '30px 0 0',
+                fontSize: 22,
+                fontStyle: 'italic',
+                color: '#1e40af',
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                whiteSpace: 'pre-wrap',
+              }}>
+                &ldquo;{certificado.programa_nombre}&rdquo;
+              </p>
+            </div>
+
+            {/* ── FIRMAS (centradas, bottom:30) ────────────── */}
+            {config.firmas && config.firmas.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 60,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'flex-end',
+                gap: firmasGap(config.firmas.length),
+              }}>
+                {config.firmas.map(f => (
+                  <div key={f.id} style={{
+                    width: SIG_ITEM_W,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                  }}>
+                    <img
+                      src={f.imagen_firma}
+                      alt={f.nombre_autoridad}
+                      style={{
+                        height: SIG_IMG_H,
+                        width: 'auto',
+                        maxWidth: SIG_ITEM_W,
+                        objectFit: 'contain',
+                        marginBottom: -10, // overlap con la línea
+                      }}
+                      crossOrigin="anonymous"
+                    />
+                    <div style={{
+                      width: SIG_ITEM_W,
+                      borderTop: '1.5px solid #475569',
+                      marginBottom: 4,
+                    }} />
+                    <p style={{
+                      margin: 0,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: '#1e293b',
+                      textAlign: 'center',
+                      whiteSpace: 'pre-wrap',
+                    }}>
+                      {f.nombre_autoridad}
+                    </p>
+                    <p style={{
+                      margin: '2px 0 0',
+                      fontSize: 9,
+                      fontStyle: 'italic',
+                      color: '#64748b',
+                      textAlign: 'center',
+                      whiteSpace: 'pre-wrap',
+                    }}>
+                      {f.cargo}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── QR (bottom:40, right:70, 100×100) ────────── */}
+            <div style={{
+              position: 'absolute',
+              right: 70,
+              bottom: 40,
+              width: 100,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}>
+              {qrDataUrl && (
+                <img
+                  src={qrDataUrl}
+                  alt="QR"
+                  style={{ width: 100, height: 100 }}
+                />
+              )}
+              <p style={{
+                margin: '4px 0 0',
+                fontSize: 8,
+                color: '#94a3b8',
+                fontFamily: '"Courier New", monospace',
+                textAlign: 'center',
+                width: 110,
+                wordBreak: 'break-all',
+                lineHeight: 1.2,
+              }}>
+                {certificado.codigo_unico}
+              </p>
+            </div>
+
+            {/* ── PIE IZQUIERDO: Fecha de emisión ──────────── */}
+            <p style={{
+              position: 'absolute',
+              left: 130,
+              bottom: 20,
+              margin: 0,
+              fontSize: 11,
+              color: '#9ca3af',
+              whiteSpace: 'pre-wrap',
+            }}>
+              Fecha de emisión: {fmtDate(certificado.fecha_emision)}
+            </p>
+
+            {/* ── FOOTER centrado ──────────────────────────── */}
+            <p style={{
+              position: 'absolute',
+              left: 0, right: 0, bottom: 20,
+              margin: 0,
+              fontSize: 11,
+              color: '#9ca3af',
+              textAlign: 'center',
+              whiteSpace: 'pre-wrap',
+            }}>
+              Certificado generado por {certificado.empresa_nombre} — Sistema de Certificación
+            </p>
+          </div>
+          {/* ═══════════ /CERTIFICADO ═══════════ */}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Botón pequeño usado en listas ──────────────────────────── */
+export function BotonGenerarPDF({ onClick, loading }: { onClick: () => void; loading: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 6,
+        padding: '6px 12px', fontSize: 12, fontWeight: 600,
+        background: '#EFF6FF', color: '#2563EB',
+        border: '1px solid #BFDBFE', borderRadius: 10, cursor: 'pointer',
+      }}
+    >
+      <Download size={12} />
+      {loading ? 'Generando...' : 'PDF'}
+    </button>
+  );
+}

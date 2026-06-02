@@ -4,11 +4,16 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TenantConfig } from '@/lib/tenants';
 import { Mail, Lock, LogIn, AlertCircle } from '@/components/ui/icon';
+import { api, ApiError } from '@/lib/api/client';
+import { authStorage, type AuthUser } from '@/lib/auth';
 
 interface LoginProps {
   tenantId: string;
   tenant: TenantConfig;
 }
+
+/** Tenant raíz cuyo JWT autoriza la administración de créditos (ver requireRootTenant). */
+const ROOT_TENANT = 'vaxa';
 
 export default function LoginSistemasVaxa({ tenantId, tenant }: LoginProps) {
   const navigate = useNavigate();
@@ -22,25 +27,29 @@ export default function LoginSistemasVaxa({ tenantId, tenant }: LoginProps) {
     setError('');
     setLoading(true);
 
-    // Simulación de login - en producción esto sería una llamada al API
-    setTimeout(() => {
-      if (email === 'admin@vaxa.com' && password === 'admin123') {
-        // Guardar auth
-        localStorage.setItem(`auth_${tenantId}`, 'true');
-        localStorage.setItem(
-          `auth_user_${tenantId}`,
-          JSON.stringify({
-            email: 'admin@vaxa.com',
-            nombre: 'Admin Vaxa',
-            role: 'superadmin',
-          })
-        );
-        navigate(`/${tenantId}/sistemas`);
-      } else {
-        setError('Email o contraseña incorrectos');
-        setLoading(false);
-      }
-    }, 1000);
+    try {
+      // Login real contra el backend como admin de la empresa raíz `vaxa`.
+      // El JWT resultante (guardado como vaxa_jwt_vaxa) autoriza /api/admin/creditos/*.
+      const { token, usuario } = await api.post<{ token: string; usuario: AuthUser }>(
+        '/api/auth/login',
+        { correo: email, contrasena: password, empresa: ROOT_TENANT },
+      );
+      authStorage.setSession(ROOT_TENANT, token, usuario);
+
+      // Mantener el guard del module-loader (booleano) que usan las pantallas de sistemas-vaxa.
+      localStorage.setItem(`auth_${tenantId}`, 'true');
+      localStorage.setItem(`auth_user_${tenantId}`, JSON.stringify({
+        email: usuario.correo,
+        nombre: `${usuario.nombres} ${usuario.apellidos}`.trim(),
+        role: usuario.rol,
+      }));
+
+      navigate(`/${tenantId}/certificaciones`);
+    } catch (err) {
+      if (err instanceof ApiError) setError(err.status === 401 ? 'Email o contraseña incorrectos' : err.message);
+      else setError('Error de conexión con el servidor');
+      setLoading(false);
+    }
   };
 
   return (
@@ -138,12 +147,6 @@ export default function LoginSistemasVaxa({ tenantId, tenant }: LoginProps) {
             </button>
           </form>
 
-          {/* Credentials hint */}
-          <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-            <p className="text-xs text-emerald-800 font-semibold mb-2">Credenciales de prueba:</p>
-            <p className="text-xs text-emerald-700">Email: admin@vaxa.com</p>
-            <p className="text-xs text-emerald-700">Contraseña: admin123</p>
-          </div>
         </div>
 
         {/* Footer */}
